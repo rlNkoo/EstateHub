@@ -9,7 +9,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>listing-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>listing-service</name>
     <description>listing-service</description>
     <url/>
@@ -60,10 +59,12 @@
         <dependency>
             <groupId>com.rlnkoo</groupId>
             <artifactId>common-events</artifactId>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.rlnkoo</groupId>
             <artifactId>common-security</artifactId>
+            <version>0.0.1</version>
         </dependency>
 
         <dependency>
@@ -112,34 +113,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>
