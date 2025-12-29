@@ -6,6 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="common-security" />
+        <module name="common-events" />
       </profile>
       <profile name="Annotation profile for listing-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
