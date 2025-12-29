@@ -57,6 +57,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rlnkoo</groupId>
+            <artifactId>common-events</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rlnkoo</groupId>
+            <artifactId>common-security</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>

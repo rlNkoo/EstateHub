@@ -65,6 +65,10 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rlnkoo</groupId>
+            <artifactId>common-security</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
