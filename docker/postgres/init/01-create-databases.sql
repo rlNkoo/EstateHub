@@ -1,4 +1,0 @@
-CREATE DATABASE user_db;
-CREATE DATABASE listing_db;
-CREATE DATABASE media_db;
-CREATE DATABASE notification_db;
