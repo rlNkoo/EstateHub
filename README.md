@@ -1,5 +1,79 @@
 # EstateHub – Infrastructure & Services
 
+# UserService
+
+UserService is a microservice responsible for user management and security within the system.  
+It acts as the central source of truth for user data and is responsible for issuing JWT tokens used by other services.
+
+The service covers the full user lifecycle: registration, account activation, authentication, password reset, and role management.  
+Communication with other services is handled asynchronously using domain events (Kafka).
+
+---
+
+## Responsibilities
+
+- user registration and email uniqueness validation
+- account activation using a one-time activation token
+- user authentication and JWT token generation
+- password reset flow (request / confirm)
+- user role management (ADMIN)
+- publishing domain events (event-driven architecture)
+
+---
+
+## Architecture
+
+UserService is structured into clearly separated layers:
+
+- **API** – REST controllers and DTOs, responsible only for the HTTP contract
+- **Domain** – business logic, domain services, and rules
+- **Persistence** – JPA entities, repositories, and mapping
+- **Security** – security configuration and JWT handling
+- **Events** – domain event publishing
+- **Config / Exception** – technical configuration and global error handling
+
+This separation ensures clarity, testability, and ease of future development.
+
+---
+
+## Account Activation
+
+After registration, a user account is created in an inactive state.  
+UserService generates a one-time activation token and publishes an event that can be consumed by an external service (e.g. NotificationService) to send an activation email.
+
+Account activation:
+- is a one-time operation
+- is based on a token with an expiration date
+- is required in order to log in
+
+---
+
+## Endpoints
+
+### Public
+- `POST /auth/register`
+- `POST /auth/confirm-registration`
+- `POST /auth/login`
+- `POST /auth/password-reset/request`
+- `POST /auth/password-reset/confirm`
+
+### Administrative
+- `PATCH /admin/users/{id}/roles`
+
+---
+
+## Events
+
+UserService publishes domain events such as:
+
+- user registered
+- user activated
+- password reset requested / confirmed
+- user role changed
+
+Thanks to event-based communication, other services are not directly coupled to the user database.
+
+
 ## 🧱 Infrastructure (Docker Compose)
 
 The project uses local infrastructure managed via **Docker Compose**.
