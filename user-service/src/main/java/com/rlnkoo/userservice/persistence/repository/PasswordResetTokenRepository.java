@@ -1,4 +1,4 @@
 package com.rlnkoo.userservice.persistence.repository;
 
-public class PasswordResetTokenRepository {
+public interface PasswordResetTokenRepository {
 }
