@@ -1,4 +1,10 @@
 package com.rlnkoo.userservice.api.auth.dto;
 
-public class RegisterResponse {
+import lombok.Builder;
+
+@Builder
+public record RegisterResponse(
+        String message,
+        boolean activationRequired
+) {
 }
