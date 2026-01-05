@@ -1,6 +1,7 @@
 package com.rlnkoo.userservice.domain.service;
 
 import com.rlnkoo.commonevents.EventEnvelope;
+import com.rlnkoo.userservice.domain.exception.EmailAlreadyUsedException;
 import com.rlnkoo.userservice.domain.model.Role;
 import com.rlnkoo.userservice.events.producer.UserEventsPublisher;
 import com.rlnkoo.userservice.events.types.UserRegisteredPayload;
@@ -33,7 +34,7 @@ public class RegistrationService {
     public void register(String email, String rawPassword) {
 
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new IllegalStateException("Email already in use");
+            throw new EmailAlreadyUsedException(email);
         }
 
         UserEntity user = UserEntity.builder()

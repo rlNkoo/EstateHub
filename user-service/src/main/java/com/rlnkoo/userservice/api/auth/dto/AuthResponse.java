@@ -1,4 +1,11 @@
 package com.rlnkoo.userservice.api.auth.dto;
 
-public class AuthResponse {
+import lombok.Builder;
+
+@Builder
+public record AuthResponse(
+        String accessToken,
+        String tokenType,
+        long expiresInSeconds
+) {
 }

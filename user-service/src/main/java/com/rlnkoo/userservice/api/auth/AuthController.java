@@ -1,10 +1,8 @@
 package com.rlnkoo.userservice.api.auth;
 
-import com.rlnkoo.userservice.api.auth.dto.ConfirmRegistrationRequest;
-import com.rlnkoo.userservice.api.auth.dto.ConfirmRegistrationResponse;
-import com.rlnkoo.userservice.api.auth.dto.RegisterRequest;
-import com.rlnkoo.userservice.api.auth.dto.RegisterResponse;
+import com.rlnkoo.userservice.api.auth.dto.*;
 import com.rlnkoo.userservice.domain.service.ActivationService;
+import com.rlnkoo.userservice.domain.service.AuthService;
 import com.rlnkoo.userservice.domain.service.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,7 @@ public class AuthController {
 
     private final RegistrationService registrationService;
     private final ActivationService activationService;
+    private final AuthService authService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -41,5 +40,14 @@ public class AuthController {
         return ConfirmRegistrationResponse.builder()
                 .message("Account activated successfully. You can now log in.")
                 .build();
+    }
+
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(
+                request.getEmail(),
+                request.getPassword()
+        );
     }
 }
