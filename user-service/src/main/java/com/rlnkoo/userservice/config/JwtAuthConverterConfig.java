@@ -21,7 +21,7 @@ public class JwtAuthConverterConfig {
             if (roles == null) roles = List.of();
 
             var authorities = roles.stream()
-                    .map(r -> "ROLE_" + r) // ADMIN -> ROLE_ADMIN
+                    .map(r -> "ROLE_" + r)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toSet());
 

@@ -35,6 +35,10 @@ public class ActivationService {
                 .findByTokenHashAndUsedAtIsNull(tokenHash)
                 .orElseThrow(InvalidActivationTokenException::new);
 
+        if (token.isUsed()) {
+            throw new InvalidActivationTokenException();
+        }
+
         if (token.isExpired(Instant.now())) {
             throw new ActivationTokenExpiredException();
         }
