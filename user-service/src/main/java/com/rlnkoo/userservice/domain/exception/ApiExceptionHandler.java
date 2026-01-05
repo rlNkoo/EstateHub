@@ -84,6 +84,14 @@ public class ApiExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(InvalidRoleException.class)
+    public ErrorResponse handleInvalidRole(
+            InvalidRoleException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
     private ErrorResponse build(HttpStatus status, String message, HttpServletRequest request) {
         return new ErrorResponse(
                 Instant.now(),
