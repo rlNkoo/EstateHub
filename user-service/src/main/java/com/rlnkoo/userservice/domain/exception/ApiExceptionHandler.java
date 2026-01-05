@@ -4,6 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.AuthenticationException;
 
 import java.time.Instant;
 
@@ -24,6 +27,22 @@ public class ApiExceptionHandler {
             HttpServletRequest request
     ) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler({AuthorizationDeniedException.class, AccessDeniedException.class})
+    public ErrorResponse handleAccessDenied(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.FORBIDDEN, "Access denied", request);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ErrorResponse handleAuthentication(
+            AuthenticationException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.UNAUTHORIZED, "Authentication required", request);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -66,6 +85,7 @@ public class ApiExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+        ex.printStackTrace();
         return build(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Unexpected error occurred",

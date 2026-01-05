@@ -22,7 +22,7 @@ public class AdminController {
     @PutMapping("/users/{userId}/roles")
     @PreAuthorize("hasRole('ADMIN')")
     public ChangeRolesResponse changeRoles(
-            @PathVariable UUID userId,
+            @PathVariable("userId") UUID userId,
             @Valid @RequestBody ChangeRolesRequest request
     ) {
         var newRoles = adminUserService.changeRoles(userId, request.getRoles());

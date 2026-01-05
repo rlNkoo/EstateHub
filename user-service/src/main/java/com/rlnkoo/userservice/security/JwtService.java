@@ -3,6 +3,7 @@ package com.rlnkoo.userservice.security;
 import com.rlnkoo.userservice.config.JwtProperties;
 import com.rlnkoo.userservice.domain.model.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -39,7 +40,7 @@ public class JwtService {
                 .claim("roles", roleNames)
                 .build();
 
-        JwsHeader header = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512).build();
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }
 }
