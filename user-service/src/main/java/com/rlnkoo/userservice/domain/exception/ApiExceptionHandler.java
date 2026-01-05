@@ -73,6 +73,17 @@ public class ApiExceptionHandler {
         );
     }
 
+    @ExceptionHandler({
+            InvalidPasswordResetTokenException.class,
+            PasswordResetTokenExpiredException.class
+    })
+    public ErrorResponse handlePasswordResetTokenErrors(
+            DomainException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
     private ErrorResponse build(HttpStatus status, String message, HttpServletRequest request) {
         return new ErrorResponse(
                 Instant.now(),

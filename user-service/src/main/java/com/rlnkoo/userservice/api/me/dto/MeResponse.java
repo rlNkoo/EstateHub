@@ -10,6 +10,9 @@ public record MeResponse(
         UUID userId,
         String email,
         Set<String> roles,
-        boolean activated
+        boolean activated,
+        String firstName,
+        String lastName,
+        String phoneNumber
 ) {
 }

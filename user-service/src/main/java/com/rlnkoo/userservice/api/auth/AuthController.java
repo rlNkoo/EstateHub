@@ -3,6 +3,7 @@ package com.rlnkoo.userservice.api.auth;
 import com.rlnkoo.userservice.api.auth.dto.*;
 import com.rlnkoo.userservice.domain.service.ActivationService;
 import com.rlnkoo.userservice.domain.service.AuthService;
+import com.rlnkoo.userservice.domain.service.PasswordResetService;
 import com.rlnkoo.userservice.domain.service.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class AuthController {
     private final RegistrationService registrationService;
     private final ActivationService activationService;
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -49,5 +51,28 @@ public class AuthController {
                 request.getEmail(),
                 request.getPassword()
         );
+    }
+
+    @PostMapping("/password-reset/request")
+    @ResponseStatus(HttpStatus.OK)
+    public PasswordResetRequestResponse requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        passwordResetService.requestReset(request.getEmail());
+
+        return PasswordResetRequestResponse.builder()
+                .message("If an account exists for this email, a password reset link has been sent.")
+                .build();
+    }
+
+    @PostMapping("/password-reset/confirm")
+    @ResponseStatus(HttpStatus.OK)
+    public PasswordResetConfirmResponse confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
+        passwordResetService.confirmReset(
+                request.getToken(),
+                request.getNewPassword()
+        );
+
+        return PasswordResetConfirmResponse.builder()
+                .message("Password has been reset successfully. You can now log in.")
+                .build();
     }
 }
