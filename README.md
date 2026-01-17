@@ -69,7 +69,6 @@ UserService publishes domain events such as:
 - user registered
 - user activated
 - password reset requested / confirmed
-- user role changed
 
 Thanks to event-based communication, other services are not directly coupled to the user database.
 
@@ -204,18 +203,10 @@ kafka-topics.sh --bootstrap-server localhost:9092 --list
 ### Read events from a topic (from beginning)
 
 ```bash
-kafka-console-consumer.sh \
+/opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic user-events \
   --from-beginning
-```
-
-### Read only new events (live)
-
-```bash
-kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic user-events
 ```
 
 ### Exit container

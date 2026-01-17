@@ -36,6 +36,9 @@ public class UserProfileService {
                                 .collect(java.util.stream.Collectors.toSet())
                 )
                 .activated(user.isEnabled())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phoneNumber(user.getPhoneNumber())
                 .build();
     }
 

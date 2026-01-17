@@ -17,6 +17,8 @@
         <spring-boot.version>4.0.1</spring-boot.version>
         <spring-cloud.version>2025.1.0</spring-cloud.version>
         <software.amazon.awssdk.version>2.40.8</software.amazon.awssdk.version>
+        <common.security.version>0.0.1</common.security.version>
+        <common.events.version>0.0.1</common.events.version>
     </properties>
 
     <modules>
@@ -53,6 +55,16 @@
                 <version>${software.amazon.awssdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.rlnkoo</groupId>
+                <artifactId>common-events</artifactId>
+                <version>${common.events.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rlnkoo</groupId>
+                <artifactId>common-security</artifactId>
+                <version>${common.security.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
