@@ -186,6 +186,45 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-
 
 ---
 
+## Kafka – Reading Events
+
+### Enter Kafka container
+
+```bash
+docker exec -it estatehub-kafka sh
+```
+
+### List topics
+
+```bash
+kafka-topics.sh --bootstrap-server localhost:9092 --list
+```
+
+### Read events from a topic (from beginning)
+
+```bash
+kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic user-events \
+  --from-beginning
+```
+
+### Read only new events (live)
+
+```bash
+kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic user-events
+```
+
+### Exit container
+
+```bash
+exit
+```
+
+---
+
 ## 🐳 Building Docker Images
 
 The project consists of multiple Spring Boot microservices.
