@@ -73,6 +73,7 @@ UserService publishes domain events such as:
 
 Thanks to event-based communication, other services are not directly coupled to the user database.
 
+---
 
 ## 🧱 Infrastructure (Docker Compose)
 
