@@ -6,6 +6,7 @@ import com.rlnkoo.userservice.domain.model.Role;
 import com.rlnkoo.userservice.persistence.entity.UserEntity;
 import com.rlnkoo.userservice.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminUserService {
@@ -21,9 +23,13 @@ public class AdminUserService {
 
     @Transactional
     public Set<Role> changeRoles(UUID userId, Set<String> roles) {
+        log.info("Change roles request targetUserId=[{}] roles=[{}]", userId, roles);
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+                .orElseThrow(() -> {
+                    log.warn("Change roles failed: user not found targetUserId=[{}]", userId);
+                    return new UserNotFoundException(userId);
+                });
 
         Set<Role> newRoles = roles.stream()
                 .map(String::trim)
@@ -32,6 +38,7 @@ public class AdminUserService {
                     try {
                         return Role.valueOf(r);
                     } catch (Exception e) {
+                        log.warn("Change roles failed: invalid role=[{}] targetUserId=[{}]", r, userId);
                         throw new InvalidRoleException(r);
                     }
                 })
@@ -39,6 +46,7 @@ public class AdminUserService {
 
         user.setRoles(newRoles);
         userRepository.save(user);
+        log.info("Roles changed targetUserId=[{}] newRoles=[{}]", userId, newRoles);
 
         return newRoles;
     }

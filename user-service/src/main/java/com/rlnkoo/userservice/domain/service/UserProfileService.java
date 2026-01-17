@@ -8,9 +8,11 @@ import com.rlnkoo.userservice.persistence.repository.UserRepository;
 import com.rlnkoo.userservice.security.CurrentUser;
 import com.rlnkoo.userservice.security.CurrentUserProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserProfileService {
@@ -20,11 +22,14 @@ public class UserProfileService {
 
     @Transactional(readOnly = true)
     public MeResponse getMe() {
-
         CurrentUser currentUser = currentUserProvider.getCurrentUser();
+        log.debug("Get profile userId=[{}]", currentUser.userId());
 
         UserEntity user = userRepository.findById(currentUser.userId())
-                .orElseThrow(() -> new UserNotFoundException(currentUser.userId()));
+                .orElseThrow(() -> {
+                    log.warn("Get profile failed: user not found userId=[{}]", currentUser.userId());
+                    return new UserNotFoundException(currentUser.userId());
+                });
 
         return MeResponse.builder()
                 .userId(user.getId())
@@ -44,11 +49,14 @@ public class UserProfileService {
 
     @Transactional
     public MeResponse updateMe(UpdateMeRequest request) {
-
         CurrentUser currentUser = currentUserProvider.getCurrentUser();
+        log.debug("Update profile attempt userId=[{}]", currentUser.userId());
 
         UserEntity user = userRepository.findById(currentUser.userId())
-                .orElseThrow(() -> new UserNotFoundException(currentUser.userId()));
+                .orElseThrow(() -> {
+                    log.warn("Update profile failed: user not found userId=[{}]", currentUser.userId());
+                    return new UserNotFoundException(currentUser.userId());
+                });
 
         user.updateProfile(
                 request.getFirstName(),
@@ -57,6 +65,7 @@ public class UserProfileService {
         );
 
         userRepository.save(user);
+        log.info("Profile updated userId=[{}] email=[{}]", user.getId(), user.getEmail());
 
         return MeResponse.builder()
                 .userId(user.getId())
