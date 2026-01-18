@@ -32,6 +32,7 @@ public class SecurityConfig {
                                 "/auth/password-reset/confirm"
                         ).permitAll()
                         .pathMatchers("/auth/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/listings/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth

@@ -10,6 +10,12 @@ public final class JwtAuthenticationConverterFactory {
 
     public static Converter<Jwt, AbstractAuthenticationToken> create() {
         JwtAuthoritiesConverter authoritiesConverter = new JwtAuthoritiesConverter();
-        return jwt -> new JwtAuthenticationToken(jwt, authoritiesConverter.convert(jwt), jwt.getSubject());
+
+        return new Converter<Jwt, AbstractAuthenticationToken>() {
+            @Override
+            public AbstractAuthenticationToken convert(Jwt jwt) {
+                return new JwtAuthenticationToken(jwt, authoritiesConverter.convert(jwt), jwt.getSubject());
+            }
+        };
     }
 }

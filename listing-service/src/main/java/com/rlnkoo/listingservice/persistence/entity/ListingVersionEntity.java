@@ -69,7 +69,7 @@ public class ListingVersionEntity {
             name = "listing_version_photos",
             joinColumns = @JoinColumn(name = "listing_version_id", nullable = false)
     )
-    @Column(name = "media_id", nullable = false, updatable = false)
+    @Column(name = "media_id", nullable = false)
     @OrderColumn(name = "position")
     @Builder.Default
     private List<UUID> photoIds = new ArrayList<>();
