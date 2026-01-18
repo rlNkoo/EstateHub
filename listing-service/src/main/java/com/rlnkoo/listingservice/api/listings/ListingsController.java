@@ -1,9 +1,6 @@
 package com.rlnkoo.listingservice.api.listings;
 
-import com.rlnkoo.listingservice.api.listings.dto.CreateListingResponse;
-import com.rlnkoo.listingservice.api.listings.dto.ListingDetailsResponse;
-import com.rlnkoo.listingservice.api.listings.dto.ListingSummaryResponse;
-import com.rlnkoo.listingservice.api.listings.dto.UpdateListingRequest;
+import com.rlnkoo.listingservice.api.listings.dto.*;
 import com.rlnkoo.listingservice.domain.exception.ListingContentNotFoundException;
 import com.rlnkoo.listingservice.domain.exception.ListingNotFoundException;
 import com.rlnkoo.listingservice.domain.service.ListingService;
@@ -38,28 +35,43 @@ public class ListingsController {
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateDraft(
-            @PathVariable UUID id,
+    public ListingActionResponse updateDraft(
+            @PathVariable("id") UUID id,
             @Valid @RequestBody UpdateListingRequest request
     ) {
-        listingService.updateDraft(id, request);
+        ListingEntity listing = listingService.updateDraft(id, request);
+
+        return ListingActionResponse.builder()
+                .id(listing.getId())
+                .status(listing.getStatus().name())
+                .version(listing.getCurrentVersion())
+                .build();
     }
 
     @PostMapping("/{id}/publish")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void publish(@PathVariable UUID id) {
-        listingService.publish(id);
+    public ListingActionResponse publish(@PathVariable("id") UUID id) {
+        ListingEntity listing = listingService.publish(id);
+
+        return ListingActionResponse.builder()
+                .id(listing.getId())
+                .status(listing.getStatus().name())
+                .version(listing.getCurrentVersion())
+                .build();
     }
 
     @PostMapping("/{id}/archive")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void archive(@PathVariable UUID id) {
-        listingService.archive(id);
+    public ListingActionResponse archive(@PathVariable("id") UUID id) {
+        ListingEntity listing = listingService.archive(id);
+
+        return ListingActionResponse.builder()
+                .id(listing.getId())
+                .status(listing.getStatus().name())
+                .version(listing.getCurrentVersion())
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ListingDetailsResponse getListing(@PathVariable UUID id) {
+    public ListingDetailsResponse getListing(@PathVariable("id") UUID id) {
         ListingEntity listing = listingService.getListing(id)
                 .orElseThrow(() -> new ListingNotFoundException(id));
 

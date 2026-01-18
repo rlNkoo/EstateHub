@@ -68,7 +68,7 @@ public class ListingService {
     }
 
     @Transactional
-    public void updateDraft(UUID listingId, UpdateListingRequest request) {
+    public ListingEntity updateDraft(UUID listingId, UpdateListingRequest request) {
         CurrentUser user = currentUserProvider.requireCurrentUser();
         log.info("Update draft request listingId=[{}] requesterId=[{}]", listingId, user.userId());
 
@@ -151,10 +151,12 @@ public class ListingService {
 
         log.info("Draft updated listingId=[{}] requesterId=[{}] newVersion=[{}]",
                 listingId, user.userId(), newVersion);
+
+        return listing;
     }
 
     @Transactional
-    public void publish(UUID listingId) {
+    public ListingEntity publish(UUID listingId) {
         CurrentUser user = currentUserProvider.requireCurrentUser();
         log.info("Publish request listingId=[{}] requesterId=[{}]", listingId, user.userId());
 
@@ -216,10 +218,12 @@ public class ListingService {
 
         log.info("Listing published listingId=[{}] requesterId=[{}] version=[{}]",
                 listingId, user.userId(), listing.getCurrentVersion());
+
+        return listing;
     }
 
     @Transactional
-    public void archive(UUID listingId) {
+    public ListingEntity archive(UUID listingId) {
         CurrentUser user = currentUserProvider.requireCurrentUser();
         log.info("Archive request listingId=[{}] requesterId=[{}]", listingId, user.userId());
 
@@ -254,6 +258,8 @@ public class ListingService {
 
         log.info("Listing archived listingId=[{}] requesterId=[{}] version=[{}]",
                 listingId, user.userId(), listing.getCurrentVersion());
+
+        return listing;
     }
 
     @Transactional(readOnly = true)
