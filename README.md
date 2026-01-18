@@ -74,6 +74,116 @@ Thanks to event-based communication, other services are not directly coupled to 
 
 ---
 
+# ListingService
+
+ListingService is a microservice responsible for managing real estate listings within the EstateHub platform.  
+It handles the full lifecycle of a listing, from draft creation through publication and archiving.
+
+The service is designed around **ownership**, **state transitions**, and **versioned content**, and exposes both public and authenticated endpoints.
+
+Listings published by users are later consumed by other services (e.g. SearchService, NotificationService) via domain events.
+
+---
+
+## Responsibilities
+
+- creation of listing drafts
+- versioned editing of listing content
+- validation of listing data and state transitions
+- publishing and archiving listings
+- enforcing ownership and role-based access rules
+- exposing public read access to published listings
+- publishing listing-related domain events
+
+---
+
+## Listing Lifecycle
+
+Each listing goes through a defined lifecycle:
+
+```
+DRAFT → PUBLISHED → ARCHIVED
+```
+
+Rules:
+- only the owner or an ADMIN can modify a listing
+- only DRAFT listings can be edited
+- a listing must have valid content before it can be published
+- ARCHIVED listings are immutable
+- non-public listings are hidden from unauthenticated users
+
+---
+
+## Architecture
+
+ListingService follows the same layered architecture pattern as UserService:
+
+- **API** – REST controllers and request/response DTOs
+- **Domain** – core business logic and domain rules
+- **Persistence** – JPA entities and repositories (PostgreSQL)
+- **Security** – JWT-based authentication and ownership checks
+- **Events** – publishing domain events to Kafka
+- **Exception** – domain-specific exceptions and global error handling
+
+This structure ensures a clean separation of concerns and keeps business rules isolated from technical details.
+
+---
+
+## Versioned Content
+
+Listing content is stored in a versioned model:
+
+- a `Listing` represents the aggregate root and current state
+- a `ListingVersion` represents an immutable snapshot of listing content
+- each update creates a new version
+- the currently active version is referenced by the listing
+
+This approach enables:
+- safe editing workflows
+- future auditing or rollback scenarios
+- clean event projections for read models
+
+---
+
+## Public vs Authenticated Access
+
+### Public
+- published listings can be retrieved without authentication
+- draft and archived listings are hidden from unauthenticated users
+
+### Authenticated
+- owners and ADMIN users can view and manage their own listings
+- unauthorized access attempts are rejected or masked as `404` where appropriate
+
+---
+
+## Endpoints
+
+### Public
+- `GET /listings/{id}` – retrieve a published listing
+
+### Authenticated
+- `POST /listings` – create a new draft listing
+- `PUT /listings/{id}` – update draft listing content
+- `POST /listings/{id}/publish` – publish a listing
+- `POST /listings/{id}/archive` – archive a listing
+- `GET /listings/mine` – retrieve listings owned by the current user
+
+---
+
+## Events
+
+ListingService publishes domain events such as:
+
+- listing created
+- listing updated
+- listing published
+- listing archived
+
+These events are consumed asynchronously by other services, such as SearchService (indexing) and NotificationService (email notifications).
+
+---
+
 ## 🧱 Infrastructure (Docker Compose)
 
 The project uses local infrastructure managed via **Docker Compose**.
@@ -206,6 +316,20 @@ kafka-topics.sh --bootstrap-server localhost:9092 --list
 /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic user-events \
+  --from-beginning
+```
+
+```bash
+/opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic listing-events \
+  --from-beginning
+```
+
+```bash
+/opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic media-events \
   --from-beginning
 ```
 
