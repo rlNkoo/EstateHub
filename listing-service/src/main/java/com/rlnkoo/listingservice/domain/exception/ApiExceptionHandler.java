@@ -13,6 +13,78 @@ import java.time.Instant;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    @ExceptionHandler(InvalidCurrencyCodeException.class)
+    public ErrorResponse handleInvalidCurrencyCode(
+            InvalidCurrencyCodeException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ListingValidationException.class)
+    public ErrorResponse handleListingValidation(
+            ListingValidationException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ListingNotPublishableException.class)
+    public ErrorResponse handleListingNotPublishable(
+            ListingNotPublishableException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ListingOwnershipException.class)
+    public ErrorResponse handleListingOwnership(
+            ListingOwnershipException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ListingNotEditableException.class)
+    public ErrorResponse handleListingNotEditable(
+            ListingNotEditableException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidPropertyTypeException.class)
+    public ErrorResponse handleInvalidPropertyType(
+            InvalidPropertyTypeException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidListingStatusTransitionException.class)
+    public ErrorResponse handleInvalidListingStatusTransition(
+            InvalidListingStatusTransitionException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ListingNotFoundException.class)
+    public ErrorResponse handleListingNotFound(
+            ListingNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ListingContentNotFoundException.class)
+    public ErrorResponse handleListingContentNotFound(
+            ListingContentNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(AuthenticationRequiredException.class)
     public ErrorResponse handleAuthenticationRequired(
             AuthenticationRequiredException ex,
