@@ -4,7 +4,6 @@ import com.rlnkoo.commonevents.EventEnvelope;
 import com.rlnkoo.commonevents.EventPublisher;
 import com.rlnkoo.commonevents.Topics;
 import com.rlnkoo.listingservice.events.types.ListingArchivedPayload;
-import com.rlnkoo.listingservice.events.types.ListingCreatedPayload;
 import com.rlnkoo.listingservice.events.types.ListingPublishedPayload;
 import com.rlnkoo.listingservice.events.types.ListingUpdatedPayload;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +16,6 @@ import java.util.UUID;
 public class ListingEventsPublisher {
 
     private final EventPublisher eventPublisher;
-
-    public void publishListingCreated(UUID listingId, ListingCreatedPayload payload) {
-        EventEnvelope<ListingCreatedPayload> envelope =
-                EventEnvelope.of("ListingCreatedV1", payload);
-
-        eventPublisher.publish(Topics.LISTING_EVENTS, listingId.toString(), envelope);
-    }
 
     public void publishListingUpdated(UUID listingId, ListingUpdatedPayload payload) {
         EventEnvelope<ListingUpdatedPayload> envelope =

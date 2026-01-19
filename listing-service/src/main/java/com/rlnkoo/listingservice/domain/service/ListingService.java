@@ -6,7 +6,6 @@ import com.rlnkoo.listingservice.domain.model.ListingStatus;
 import com.rlnkoo.listingservice.domain.model.PropertyType;
 import com.rlnkoo.listingservice.events.producer.ListingEventsPublisher;
 import com.rlnkoo.listingservice.events.types.ListingArchivedPayload;
-import com.rlnkoo.listingservice.events.types.ListingCreatedPayload;
 import com.rlnkoo.listingservice.events.types.ListingPublishedPayload;
 import com.rlnkoo.listingservice.events.types.ListingUpdatedPayload;
 import com.rlnkoo.listingservice.persistence.entity.ListingEntity;
@@ -47,21 +46,12 @@ public class ListingService {
                 .ownerId(user.userId())
                 .status(ListingStatus.DRAFT)
                 .currentVersion(1)
+                .publishedVersion(null)
                 .build();
 
         listingRepository.save(listing);
 
-        eventsPublisher.publishListingCreated(
-                listingId,
-                ListingCreatedPayload.builder()
-                        .listingId(listingId)
-                        .ownerId(user.userId())
-                        .status(listing.getStatus().name())
-                        .version(listing.getCurrentVersion())
-                        .build()
-        );
-
-        log.info("Draft created ownerId=[{}] listingId=[{}] status=[{}] version=[{}]",
+        log.info("Draft created ownerId=[{}] listingId=[{}] status=[{}] currentVersion=[{}]",
                 user.userId(), listingId, listing.getStatus(), listing.getCurrentVersion());
 
         return listingId;
@@ -70,20 +60,26 @@ public class ListingService {
     @Transactional
     public ListingEntity updateDraft(UUID listingId, UpdateListingRequest request) {
         CurrentUser user = currentUserProvider.requireCurrentUser();
-        log.info("Update draft request listingId=[{}] requesterId=[{}]", listingId, user.userId());
+        log.info("Update request listingId=[{}] requesterId=[{}]", listingId, user.userId());
 
         ListingEntity listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> {
-                    log.warn("Update draft failed: listing not found listingId=[{}] requesterId=[{}]",
+                    log.warn("Update failed: listing not found listingId=[{}] requesterId=[{}]",
                             listingId, user.userId());
                     return new ListingNotFoundException(listingId);
                 });
 
         assertOwnerOrAdmin(user, listing);
 
-        if (!listing.getStatus().isEditable()) {
-            log.warn("Update draft failed: not editable listingId=[{}] status=[{}] requesterId=[{}]",
-                    listingId, listing.getStatus(), user.userId());
+        if (listing.getStatus() == ListingStatus.ARCHIVED) {
+            log.warn("Update failed: archived listing listingId=[{}] requesterId=[{}]",
+                    listingId, user.userId());
+            throw new ListingNotEditableException(listingId, listing.getStatus());
+        }
+
+        if (listing.getStatus() == ListingStatus.PUBLISHED && !listing.hasActiveEdit()) {
+            log.warn("Update failed: published listing has no active edit listingId=[{}] requesterId=[{}] publishedVersion=[{}] currentVersion=[{}]",
+                    listingId, user.userId(), listing.getPublishedVersion(), listing.getCurrentVersion());
             throw new ListingNotEditableException(listingId, listing.getStatus());
         }
 
@@ -91,7 +87,7 @@ public class ListingService {
         try {
             propertyType = PropertyType.valueOf(request.propertyType());
         } catch (IllegalArgumentException ex) {
-            log.warn("Update draft failed: invalid propertyType=[{}] listingId=[{}] requesterId=[{}]",
+            log.warn("Update failed: invalid propertyType=[{}] listingId=[{}] requesterId=[{}]",
                     request.propertyType(), listingId, user.userId());
             throw new InvalidPropertyTypeException(request.propertyType());
         }
@@ -124,33 +120,8 @@ public class ListingService {
         listing.setCurrentVersion(newVersion);
         listingRepository.save(listing);
 
-        eventsPublisher.publishListingUpdated(
-                listingId,
-                ListingUpdatedPayload.builder()
-                        .listingId(listingId)
-                        .ownerId(listing.getOwnerId())
-                        .status(listing.getStatus().name())
-                        .version(newVersion)
-                        .title(versionEntity.getTitle())
-                        .description(versionEntity.getDescription())
-                        .priceAmount(versionEntity.getPriceAmount())
-                        .currencyCode(versionEntity.getCurrencyCode())
-                        .address(ListingUpdatedPayload.AddressPayload.builder()
-                                .country(versionEntity.getAddress().getCountry())
-                                .city(versionEntity.getAddress().getCity())
-                                .street(versionEntity.getAddress().getStreet())
-                                .postalCode(versionEntity.getAddress().getPostalCode())
-                                .build())
-                        .area(versionEntity.getArea())
-                        .rooms(versionEntity.getRooms())
-                        .floor(versionEntity.getFloor())
-                        .propertyType(versionEntity.getPropertyType().name())
-                        .photoIds(versionEntity.getPhotoIds())
-                        .build()
-        );
-
-        log.info("Draft updated listingId=[{}] requesterId=[{}] newVersion=[{}]",
-                listingId, user.userId(), newVersion);
+        log.info("Listing updated (no event) listingId=[{}] requesterId=[{}] newCurrentVersion=[{}] status=[{}] publishedVersion=[{}]",
+                listingId, user.userId(), newVersion, listing.getStatus(), listing.getPublishedVersion());
 
         return listing;
     }
@@ -186,6 +157,7 @@ public class ListingService {
         ensurePublishable(listingId, current);
 
         listing.setStatus(ListingStatus.PUBLISHED);
+        listing.setPublishedVersion(listing.getCurrentVersion());
         listingRepository.save(listing);
 
         Instant now = Instant.now();
@@ -196,7 +168,7 @@ public class ListingService {
                         .listingId(listingId)
                         .ownerId(listing.getOwnerId())
                         .status(listing.getStatus().name())
-                        .version(listing.getCurrentVersion())
+                        .version(listing.getPublishedVersion())
                         .publishedAt(now)
                         .title(current.getTitle())
                         .description(current.getDescription())
@@ -216,8 +188,152 @@ public class ListingService {
                         .build()
         );
 
-        log.info("Listing published listingId=[{}] requesterId=[{}] version=[{}]",
-                listingId, user.userId(), listing.getCurrentVersion());
+        log.info("Listing published listingId=[{}] requesterId=[{}] publishedVersion=[{}]",
+                listingId, user.userId(), listing.getPublishedVersion());
+
+        return listing;
+    }
+
+    @Transactional
+    public ListingEntity startEdit(UUID listingId) {
+        CurrentUser user = currentUserProvider.requireCurrentUser();
+        log.info("Start edit request listingId=[{}] requesterId=[{}]", listingId, user.userId());
+
+        ListingEntity listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> {
+                    log.warn("Start edit failed: listing not found listingId=[{}] requesterId=[{}]",
+                            listingId, user.userId());
+                    return new ListingNotFoundException(listingId);
+                });
+
+        assertOwnerOrAdmin(user, listing);
+
+        if (listing.getStatus() != ListingStatus.PUBLISHED) {
+            log.warn("Start edit failed: listing not published listingId=[{}] status=[{}] requesterId=[{}]",
+                    listingId, listing.getStatus(), user.userId());
+            throw new ListingValidationException("Only PUBLISHED listings can be edited via /edit");
+        }
+
+        if (listing.hasActiveEdit()) {
+            log.info("Start edit noop: already active edit listingId=[{}] publishedVersion=[{}] currentVersion=[{}]",
+                    listingId, listing.getPublishedVersion(), listing.getCurrentVersion());
+            return listing;
+        }
+
+        Integer publishedVersion = listing.getPublishedVersion();
+        if (publishedVersion == null) {
+            log.warn("Start edit failed: publishedVersion null listingId=[{}]", listingId);
+            throw new ListingContentNotFoundException(listingId);
+        }
+
+        ListingVersionEntity published = versionRepository
+                .findByListingIdAndVersionNo(listingId, publishedVersion)
+                .orElseThrow(() -> {
+                    log.warn("Start edit failed: published content not found listingId=[{}] publishedVersion=[{}]",
+                            listingId, publishedVersion);
+                    return new ListingContentNotFoundException(listingId);
+                });
+
+        int newWorkingVersion = listing.getCurrentVersion() + 1;
+
+        ListingVersionEntity workingCopy = ListingVersionEntity.builder()
+                .id(UUID.randomUUID())
+                .listingId(listingId)
+                .versionNo(newWorkingVersion)
+                .title(published.getTitle())
+                .description(published.getDescription())
+                .priceAmount(published.getPriceAmount())
+                .currencyCode(published.getCurrencyCode())
+                .address(ListingVersionEntity.AddressEmbeddable.builder()
+                        .country(published.getAddress().getCountry())
+                        .city(published.getAddress().getCity())
+                        .street(published.getAddress().getStreet())
+                        .postalCode(published.getAddress().getPostalCode())
+                        .build())
+                .area(published.getArea())
+                .rooms(published.getRooms())
+                .floor(published.getFloor())
+                .propertyType(published.getPropertyType())
+                .photoIds(published.getPhotoIds() == null ? List.of() : List.copyOf(published.getPhotoIds()))
+                .build();
+
+        versionRepository.save(workingCopy);
+
+        listing.setCurrentVersion(newWorkingVersion);
+        listingRepository.save(listing);
+
+        log.info("Edit started listingId=[{}] publishedVersion=[{}] newWorkingVersion=[{}] requesterId=[{}]",
+                listingId, listing.getPublishedVersion(), listing.getCurrentVersion(), user.userId());
+
+        return listing;
+    }
+
+    @Transactional
+    public ListingEntity republish(UUID listingId) {
+        CurrentUser user = currentUserProvider.requireCurrentUser();
+        log.info("Republish request listingId=[{}] requesterId=[{}]", listingId, user.userId());
+
+        ListingEntity listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> {
+                    log.warn("Republish failed: listing not found listingId=[{}] requesterId=[{}]",
+                            listingId, user.userId());
+                    return new ListingNotFoundException(listingId);
+                });
+
+        assertOwnerOrAdmin(user, listing);
+
+        if (listing.getStatus() != ListingStatus.PUBLISHED) {
+            log.warn("Republish failed: listing not published listingId=[{}] status=[{}] requesterId=[{}]",
+                    listingId, listing.getStatus(), user.userId());
+            throw new ListingValidationException("Only PUBLISHED listings can be republished");
+        }
+
+        if (!listing.hasActiveEdit()) {
+            log.warn("Republish failed: no active edit listingId=[{}] publishedVersion=[{}] currentVersion=[{}] requesterId=[{}]",
+                    listingId, listing.getPublishedVersion(), listing.getCurrentVersion(), user.userId());
+            throw new ListingValidationException("No active edit to republish (call /edit first)");
+        }
+
+        ListingVersionEntity working = versionRepository
+                .findByListingIdAndVersionNo(listingId, listing.getCurrentVersion())
+                .orElseThrow(() -> {
+                    log.warn("Republish failed: working content not found listingId=[{}] currentVersion=[{}] requesterId=[{}]",
+                            listingId, listing.getCurrentVersion(), user.userId());
+                    return new ListingContentNotFoundException(listingId);
+                });
+
+        ensurePublishable(listingId, working);
+
+        listing.setPublishedVersion(listing.getCurrentVersion());
+        listingRepository.save(listing);
+
+        eventsPublisher.publishListingUpdated(
+                listingId,
+                ListingUpdatedPayload.builder()
+                        .listingId(listingId)
+                        .ownerId(listing.getOwnerId())
+                        .status(listing.getStatus().name())
+                        .version(listing.getPublishedVersion())
+                        .title(working.getTitle())
+                        .description(working.getDescription())
+                        .priceAmount(working.getPriceAmount())
+                        .currencyCode(working.getCurrencyCode())
+                        .address(ListingUpdatedPayload.AddressPayload.builder()
+                                .country(working.getAddress().getCountry())
+                                .city(working.getAddress().getCity())
+                                .street(working.getAddress().getStreet())
+                                .postalCode(working.getAddress().getPostalCode())
+                                .build())
+                        .area(working.getArea())
+                        .rooms(working.getRooms())
+                        .floor(working.getFloor())
+                        .propertyType(working.getPropertyType().name())
+                        .photoIds(working.getPhotoIds())
+                        .build()
+        );
+
+        log.info("Listing republished listingId=[{}] requesterId=[{}] newPublishedVersion=[{}]",
+                listingId, user.userId(), listing.getPublishedVersion());
 
         return listing;
     }
@@ -245,19 +361,23 @@ public class ListingService {
         listing.setStatus(ListingStatus.ARCHIVED);
         listingRepository.save(listing);
 
+        int archivedVersion = listing.getPublishedVersion() != null
+                ? listing.getPublishedVersion()
+                : listing.getCurrentVersion();
+
         eventsPublisher.publishListingArchived(
                 listingId,
                 ListingArchivedPayload.builder()
                         .listingId(listingId)
                         .ownerId(listing.getOwnerId())
                         .status(listing.getStatus().name())
-                        .version(listing.getCurrentVersion())
+                        .version(archivedVersion)
                         .archivedAt(Instant.now())
                         .build()
         );
 
-        log.info("Listing archived listingId=[{}] requesterId=[{}] version=[{}]",
-                listingId, user.userId(), listing.getCurrentVersion());
+        log.info("Listing archived listingId=[{}] requesterId=[{}] archivedVersion=[{}]",
+                listingId, user.userId(), archivedVersion);
 
         return listing;
     }
@@ -268,9 +388,21 @@ public class ListingService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<ListingVersionEntity> getListingCurrentVersion(UUID listingId) {
-        return listingRepository.findById(listingId)
-                .flatMap(l -> versionRepository.findByListingIdAndVersionNo(listingId, l.getCurrentVersion()));
+    public Optional<ListingVersionEntity> getListingVersion(UUID listingId, int versionNo) {
+        return versionRepository.findByListingIdAndVersionNo(listingId, versionNo);
+    }
+
+    @Transactional(readOnly = true)
+    public int resolveVersionForRead(ListingEntity listing, boolean ownerOrAdmin) {
+        if (listing.isPublished()) {
+            if (ownerOrAdmin && listing.hasActiveEdit()) {
+                return listing.getCurrentVersion();
+            }
+            if (listing.getPublishedVersion() != null) {
+                return listing.getPublishedVersion();
+            }
+        }
+        return listing.getCurrentVersion();
     }
 
     @Transactional(readOnly = true)

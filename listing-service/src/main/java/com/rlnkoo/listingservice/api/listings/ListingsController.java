@@ -6,7 +6,6 @@ import com.rlnkoo.listingservice.domain.exception.ListingNotFoundException;
 import com.rlnkoo.listingservice.domain.service.ListingService;
 import com.rlnkoo.listingservice.persistence.entity.ListingEntity;
 import com.rlnkoo.listingservice.persistence.entity.ListingVersionEntity;
-import com.rlnkoo.listingservice.security.CurrentUser;
 import com.rlnkoo.listingservice.security.CurrentUserProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,6 @@ public class ListingsController {
             @Valid @RequestBody UpdateListingRequest request
     ) {
         ListingEntity listing = listingService.updateDraft(id, request);
-
         return ListingActionResponse.builder()
                 .id(listing.getId())
                 .status(listing.getStatus().name())
@@ -51,7 +49,16 @@ public class ListingsController {
     @PostMapping("/{id}/publish")
     public ListingActionResponse publish(@PathVariable("id") UUID id) {
         ListingEntity listing = listingService.publish(id);
+        return ListingActionResponse.builder()
+                .id(listing.getId())
+                .status(listing.getStatus().name())
+                .version(listing.getPublishedVersion() != null ? listing.getPublishedVersion() : listing.getCurrentVersion())
+                .build();
+    }
 
+    @PostMapping("/{id}/archive")
+    public ListingActionResponse archive(@PathVariable("id") UUID id) {
+        ListingEntity listing = listingService.archive(id);
         return ListingActionResponse.builder()
                 .id(listing.getId())
                 .status(listing.getStatus().name())
@@ -59,14 +66,23 @@ public class ListingsController {
                 .build();
     }
 
-    @PostMapping("/{id}/archive")
-    public ListingActionResponse archive(@PathVariable("id") UUID id) {
-        ListingEntity listing = listingService.archive(id);
-
+    @PostMapping("/{id}/edit")
+    public ListingActionResponse startEdit(@PathVariable("id") UUID id) {
+        ListingEntity listing = listingService.startEdit(id);
         return ListingActionResponse.builder()
                 .id(listing.getId())
                 .status(listing.getStatus().name())
                 .version(listing.getCurrentVersion())
+                .build();
+    }
+
+    @PostMapping("/{id}/republish")
+    public ListingActionResponse republish(@PathVariable("id") UUID id) {
+        ListingEntity listing = listingService.republish(id);
+        return ListingActionResponse.builder()
+                .id(listing.getId())
+                .status(listing.getStatus().name())
+                .version(listing.getPublishedVersion() != null ? listing.getPublishedVersion() : listing.getCurrentVersion())
                 .build();
     }
 
@@ -75,22 +91,22 @@ public class ListingsController {
         ListingEntity listing = listingService.getListing(id)
                 .orElseThrow(() -> new ListingNotFoundException(id));
 
+        boolean isOwnerOrAdmin = currentUserProvider.getCurrentUserOptional()
+                .map(u -> u.userId().equals(listing.getOwnerId()) || u.roles().contains("ADMIN"))
+                .orElse(false);
+
         if (!listing.getStatus().isPubliclyVisible()) {
-            CurrentUser user = currentUserProvider.getCurrentUserOptional()
-                    .orElseThrow(() -> new ListingNotFoundException(id));
-
-            boolean isOwner = user.userId().equals(listing.getOwnerId());
-            boolean isAdmin = user.roles().contains("ADMIN");
-
-            if (!isOwner && !isAdmin) {
+            if (!isOwnerOrAdmin) {
                 throw new ListingNotFoundException(id);
             }
         }
 
-        ListingVersionEntity version = listingService.getListingCurrentVersion(id)
+        int versionToRead = listingService.resolveVersionForRead(listing, isOwnerOrAdmin);
+
+        ListingVersionEntity version = listingService.getListingVersion(id, versionToRead)
                 .orElseThrow(() -> new ListingContentNotFoundException(id));
 
-        return toDetailsResponse(listing, version);
+        return toDetailsResponse(listing, version, versionToRead);
     }
 
     @GetMapping("/mine")
@@ -109,12 +125,12 @@ public class ListingsController {
         return result;
     }
 
-    private ListingDetailsResponse toDetailsResponse(ListingEntity listing, ListingVersionEntity version) {
+    private ListingDetailsResponse toDetailsResponse(ListingEntity listing, ListingVersionEntity version, int versionNo) {
         return ListingDetailsResponse.builder()
                 .id(listing.getId())
                 .ownerId(listing.getOwnerId())
                 .status(listing.getStatus().name())
-                .version(listing.getCurrentVersion())
+                .version(versionNo)
                 .title(version.getTitle())
                 .description(version.getDescription())
                 .priceAmount(version.getPriceAmount())

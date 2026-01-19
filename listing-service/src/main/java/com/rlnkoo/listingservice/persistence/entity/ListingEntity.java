@@ -30,6 +30,9 @@ public class ListingEntity {
     @Column(name = "current_version", nullable = false)
     private int currentVersion;
 
+    @Column(name = "published_version")
+    private Integer publishedVersion;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -52,5 +55,13 @@ public class ListingEntity {
     @PreUpdate
     void preUpdate() {
         updatedAt = Instant.now();
+    }
+
+    public boolean isPublished() {
+        return status == ListingStatus.PUBLISHED;
+    }
+
+    public boolean hasActiveEdit() {
+        return publishedVersion != null && currentVersion > publishedVersion;
     }
 }

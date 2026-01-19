@@ -16,8 +16,4 @@ public enum ListingStatus {
     public boolean isPubliclyVisible() {
         return this == PUBLISHED;
     }
-
-    public boolean isEditable() {
-        return this == DRAFT;
-    }
 }

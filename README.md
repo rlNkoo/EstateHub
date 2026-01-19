@@ -76,96 +76,93 @@ Thanks to event-based communication, other services are not directly coupled to 
 
 # ListingService
 
-ListingService is a microservice responsible for managing real estate listings within the EstateHub platform.  
-It handles the full lifecycle of a listing, from draft creation through publication and archiving.
+ListingService is a microservice responsible for managing real estate listings and their lifecycle.  
+It handles listing creation, versioned content management, publication, controlled editing of published listings, and archiving.
 
-The service is designed around **ownership**, **state transitions**, and **versioned content**, and exposes both public and authenticated endpoints.
-
-Listings published by users are later consumed by other services (e.g. SearchService, NotificationService) via domain events.
+The service enforces ownership rules, lifecycle transitions, and strict separation between public and internal views of listing content.  
+All communication with other services is asynchronous and event-driven.
 
 ---
 
 ## Responsibilities
 
-- creation of listing drafts
+- creation and management of listing drafts
 - versioned editing of listing content
-- validation of listing data and state transitions
-- publishing and archiving listings
+- publication of listings
+- controlled modification of published listings
+- archiving listings
 - enforcing ownership and role-based access rules
-- exposing public read access to published listings
-- publishing listing-related domain events
-
----
-
-## Listing Lifecycle
-
-Each listing goes through a defined lifecycle:
-
-```
-DRAFT → PUBLISHED → ARCHIVED
-```
-
-Rules:
-- only the owner or an ADMIN can modify a listing
-- only DRAFT listings can be edited
-- a listing must have valid content before it can be published
-- ARCHIVED listings are immutable
-- non-public listings are hidden from unauthenticated users
+- exposing public read access for published listings
+- publishing domain events
 
 ---
 
 ## Architecture
 
-ListingService follows the same layered architecture pattern as UserService:
+ListingService follows the same layered architecture pattern as other services:
 
 - **API** – REST controllers and request/response DTOs
-- **Domain** – core business logic and domain rules
-- **Persistence** – JPA entities and repositories (PostgreSQL)
-- **Security** – JWT-based authentication and ownership checks
-- **Events** – publishing domain events to Kafka
-- **Exception** – domain-specific exceptions and global error handling
-
-This structure ensures a clean separation of concerns and keeps business rules isolated from technical details.
+- **Domain** – business rules and lifecycle logic
+- **Persistence** – JPA entities and repositories
+- **Security** – ownership and authorization enforcement
+- **Events** – domain event publishing
+- **Exception** – global error handling
 
 ---
 
-## Versioned Content
+## Listing Lifecycle
 
-Listing content is stored in a versioned model:
+Listings move through the following lifecycle:
 
-- a `Listing` represents the aggregate root and current state
-- a `ListingVersion` represents an immutable snapshot of listing content
-- each update creates a new version
-- the currently active version is referenced by the listing
+```
+DRAFT → PUBLISHED → ARCHIVED
+```
 
-This approach enables:
-- safe editing workflows
-- future auditing or rollback scenarios
-- clean event projections for read models
+Listings can only be modified by their owner or an ADMIN user.  
+Archived listings are immutable and not publicly visible.
 
 ---
 
-## Public vs Authenticated Access
+## Versioned Content Model
 
-### Public
-- published listings can be retrieved without authentication
-- draft and archived listings are hidden from unauthenticated users
+Listing content is stored as immutable versions.
 
-### Authenticated
-- owners and ADMIN users can view and manage their own listings
-- unauthorized access attempts are rejected or masked as `404` where appropriate
+- `ListingEntity` represents the aggregate root and holds the current state and version pointers
+- `ListingVersionEntity` represents an immutable snapshot of listing content
+
+Public users always see the **published version** of a listing.  
+Authenticated owners and administrators may work with newer versions when editing listings.
+
+---
+
+## Editing Published Listings
+
+Published listings are not modified directly.  
+To change the content of a published listing, ListingService uses a controlled edit and republish flow.
+
+The process consists of:
+
+1. Starting an edit session, which creates a new working version based on the currently published version
+2. Updating the working version, producing new immutable versions
+3. Republishing the listing, which promotes the working version to the new published version
+
+During this process, the listing remains published and publicly visible with the previous version until republished.
 
 ---
 
 ## Endpoints
 
 ### Public
+
 - `GET /listings/{id}` – retrieve a published listing
 
 ### Authenticated
+
 - `POST /listings` – create a new draft listing
-- `PUT /listings/{id}` – update draft listing content
-- `POST /listings/{id}/publish` – publish a listing
+- `PUT /listings/{id}` – update listing content
+- `POST /listings/{id}/publish` – publish a draft listing
+- `POST /listings/{id}/edit` – start editing a published listing
+- `POST /listings/{id}/republish` – republish edited listing content
 - `POST /listings/{id}/archive` – archive a listing
 - `GET /listings/mine` – retrieve listings owned by the current user
 
@@ -173,14 +170,15 @@ This approach enables:
 
 ## Events
 
-ListingService publishes domain events such as:
+ListingService publishes domain events when the public state of a listing changes:
 
-- listing created
-- listing updated
-- listing published
-- listing archived
+- **ListingPublished** – when a listing is published
+- **ListingUpdated** – when a published listing is republished with new content
+- **ListingArchived** – when a listing is archived
 
-These events are consumed asynchronously by other services, such as SearchService (indexing) and NotificationService (email notifications).
+Draft creation and draft or working-copy edits do not produce events.
+
+These events are consumed by other services such as SearchService and NotificationService.
 
 ---
 

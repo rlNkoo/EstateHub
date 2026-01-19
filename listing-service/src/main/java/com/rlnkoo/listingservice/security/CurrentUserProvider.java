@@ -1,7 +1,6 @@
 package com.rlnkoo.listingservice.security;
 
 import com.rlnkoo.commonsecurity.Claims;
-import com.rlnkoo.commonsecurity.Roles;
 import com.rlnkoo.listingservice.domain.exception.AuthenticationRequiredException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,9 +41,5 @@ public class CurrentUserProvider {
 
     public CurrentUser requireCurrentUser() {
         return getCurrentUserOptional().orElseThrow(AuthenticationRequiredException::new);
-    }
-
-    public boolean hasRole(CurrentUser user, String role) {
-        return user.roles().contains(role) || user.roles().contains(Roles.asAuthority(role));
     }
 }
