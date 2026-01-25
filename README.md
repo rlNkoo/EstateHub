@@ -110,6 +110,43 @@ ListingService follows the same layered architecture pattern as other services:
 
 ---
 
+# ListingService
+
+ListingService is a microservice responsible for managing real estate listings and their lifecycle.
+It acts as the central source of truth for listing data and exposes both public and authenticated access to listing content.
+
+The service covers the full listing lifecycle: draft creation, content updates, publication, and archiving.
+Communication with other services is handled asynchronously using domain events (Kafka).
+
+---
+
+## Responsibilities
+
+- creation and management of real estate listings
+- handling the full listing lifecycle (draft, published, archived)
+- versioned storage of listing content
+- publication and archiving of listings
+- enforcing ownership and role-based access rules
+- exposing public read access for published listings
+- publishing domain events (event-driven architecture)
+
+---
+
+## Architecture
+
+ListingService is structured into clearly separated layers:
+
+- **API** – REST controllers and DTOs, responsible only for the HTTP contract
+- **Domain** – business logic, lifecycle rules, and validations
+- **Persistence** – JPA entities, repositories, and mapping
+- **Security** – ownership and authorization enforcement
+- **Events** – domain event publishing
+- **Config / Exception** – technical configuration and global error handling
+
+This separation ensures clarity, testability, and ease of future development.
+
+---
+
 ## Listing Lifecycle
 
 Listings move through the following lifecycle:
@@ -118,51 +155,43 @@ Listings move through the following lifecycle:
 DRAFT → PUBLISHED → ARCHIVED
 ```
 
-Listings can only be modified by their owner or an ADMIN user.  
-Archived listings are immutable and not publicly visible.
+- Listings are created as drafts.
+- Draft listings are only visible to their owner or ADMIN users.
+- Published listings are publicly visible.
+- Archived listings are immutable and not publicly visible.
+
+Only the listing owner or an ADMIN user may modify a listing.
 
 ---
 
 ## Versioned Content Model
 
-Listing content is stored as immutable versions.
+ListingService uses a versioned content model.
 
-- `ListingEntity` represents the aggregate root and holds the current state and version pointers
-- `ListingVersionEntity` represents an immutable snapshot of listing content
+- Listing metadata and state are stored in `ListingEntity`
+- Listing content is stored as immutable versions in `ListingVersionEntity`
 
-Public users always see the **published version** of a listing.  
-Authenticated owners and administrators may work with newer versions when editing listings.
+Each update creates a new content version, allowing the system to track changes over time and ensure consistency between stored data and public views.
 
 ---
 
-## Editing Published Listings
+## Read Access Semantics
 
-Published listings are not modified directly.  
-To change the content of a published listing, ListingService uses a controlled edit and republish flow.
-
-The process consists of:
-
-1. Starting an edit session, which creates a new working version based on the currently published version
-2. Updating the working version, producing new immutable versions
-3. Republishing the listing, which promotes the working version to the new published version
-
-During this process, the listing remains published and publicly visible with the previous version until republished.
+- Public users can access only published listings.
+- Owners and ADMIN users can access their own draft listings.
+- The service automatically resolves the correct version of content to return based on listing state.
 
 ---
 
 ## Endpoints
 
 ### Public
-
 - `GET /listings/{id}` – retrieve a published listing
 
 ### Authenticated
-
 - `POST /listings` – create a new draft listing
 - `PUT /listings/{id}` – update listing content
 - `POST /listings/{id}/publish` – publish a draft listing
-- `POST /listings/{id}/edit` – start editing a published listing
-- `POST /listings/{id}/republish` – republish edited listing content
 - `POST /listings/{id}/archive` – archive a listing
 - `GET /listings/mine` – retrieve listings owned by the current user
 
@@ -172,13 +201,11 @@ During this process, the listing remains published and publicly visible with the
 
 ListingService publishes domain events when the public state of a listing changes:
 
-- **ListingPublished** – when a listing is published
-- **ListingUpdated** – when a published listing is republished with new content
+- **ListingPublished** – when a draft listing is published
+- **ListingUpdated** – when a published listing content changes
 - **ListingArchived** – when a listing is archived
 
-Draft creation and draft or working-copy edits do not produce events.
-
-These events are consumed by other services such as SearchService and NotificationService.
+Thanks to event-based communication, other services are not directly coupled to the listing database.
 
 ---
 
