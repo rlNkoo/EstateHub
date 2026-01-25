@@ -3,6 +3,7 @@ package com.rlnkoo.listingservice.api.listings;
 import com.rlnkoo.listingservice.api.listings.dto.*;
 import com.rlnkoo.listingservice.domain.exception.ListingContentNotFoundException;
 import com.rlnkoo.listingservice.domain.exception.ListingNotFoundException;
+import com.rlnkoo.listingservice.domain.model.ListingStatus;
 import com.rlnkoo.listingservice.domain.service.ListingService;
 import com.rlnkoo.listingservice.persistence.entity.ListingEntity;
 import com.rlnkoo.listingservice.persistence.entity.ListingVersionEntity;
@@ -34,15 +35,20 @@ public class ListingsController {
     }
 
     @PutMapping("/{id}")
-    public ListingActionResponse updateDraft(
+    public ListingActionResponse update(
             @PathVariable("id") UUID id,
             @Valid @RequestBody UpdateListingRequest request
     ) {
-        ListingEntity listing = listingService.updateDraft(id, request);
+        ListingEntity listing = listingService.update(id, request);
+
+        int version = listing.getStatus() == ListingStatus.PUBLISHED
+                ? (listing.getPublishedVersion() != null ? listing.getPublishedVersion() : listing.getCurrentVersion())
+                : listing.getCurrentVersion();
+
         return ListingActionResponse.builder()
                 .id(listing.getId())
                 .status(listing.getStatus().name())
-                .version(listing.getCurrentVersion())
+                .version(version)
                 .build();
     }
 
@@ -66,26 +72,6 @@ public class ListingsController {
                 .build();
     }
 
-    @PostMapping("/{id}/edit")
-    public ListingActionResponse startEdit(@PathVariable("id") UUID id) {
-        ListingEntity listing = listingService.startEdit(id);
-        return ListingActionResponse.builder()
-                .id(listing.getId())
-                .status(listing.getStatus().name())
-                .version(listing.getCurrentVersion())
-                .build();
-    }
-
-    @PostMapping("/{id}/republish")
-    public ListingActionResponse republish(@PathVariable("id") UUID id) {
-        ListingEntity listing = listingService.republish(id);
-        return ListingActionResponse.builder()
-                .id(listing.getId())
-                .status(listing.getStatus().name())
-                .version(listing.getPublishedVersion() != null ? listing.getPublishedVersion() : listing.getCurrentVersion())
-                .build();
-    }
-
     @GetMapping("/{id}")
     public ListingDetailsResponse getListing(@PathVariable("id") UUID id) {
         ListingEntity listing = listingService.getListing(id)
@@ -101,7 +87,7 @@ public class ListingsController {
             }
         }
 
-        int versionToRead = listingService.resolveVersionForRead(listing, isOwnerOrAdmin);
+        int versionToRead = listingService.resolveVersionForRead(listing);
 
         ListingVersionEntity version = listingService.getListingVersion(id, versionToRead)
                 .orElseThrow(() -> new ListingContentNotFoundException(id));
