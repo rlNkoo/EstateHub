@@ -5,4 +5,6 @@ import java.util.UUID;
 public interface ListingOwnershipVerifier {
 
     UUID requireOwnerOrAdmin(UUID listingId);
+
+    void requireCanRead(UUID listingId);
 }

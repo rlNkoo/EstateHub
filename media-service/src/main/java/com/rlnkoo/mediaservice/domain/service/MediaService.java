@@ -73,13 +73,30 @@ public class MediaService {
         String extension = contentTypeMapper.extensionFor(contentType);
 
         String objectKey = objectKeyFactory.photoObjectKey(listingId, mediaId, extension);
-
         String thumbnailKey = objectKeyFactory.thumbnailObjectKey(listingId, mediaId);
 
-        storageService.putObject(objectKey, bytes, contentType);
+        try {
+            storageService.putObject(objectKey, bytes, contentType);
 
-        byte[] thumbBytes = imageProcessingService.createJpegThumbnail(bytes);
-        storageService.putObject(thumbnailKey, thumbBytes, "image/jpeg");
+            byte[] thumbBytes = imageProcessingService.createJpegThumbnail(bytes);
+            storageService.putObject(thumbnailKey, thumbBytes, "image/jpeg");
+        } catch (Exception ex) {
+            try {
+                storageService.deleteObject(objectKey);
+            } catch (Exception cleanupEx) {
+                log.warn("Cleanup failed for objectKey=[{}] message=[{}]", objectKey, cleanupEx.getMessage());
+            }
+            try {
+                storageService.deleteObject(thumbnailKey);
+            } catch (Exception cleanupEx) {
+                log.debug("Thumbnail cleanup skipped/failed thumbnailKey=[{}] message=[{}]",
+                        thumbnailKey, cleanupEx.getMessage());
+            }
+            if (ex instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new StorageException("Upload failed", ex);
+        }
 
         MediaObjectEntity entity = MediaObjectEntity.builder()
                 .id(mediaId)
@@ -132,7 +149,8 @@ public class MediaService {
 
     @Transactional(readOnly = true)
     public List<MediaObjectEntity> listPhotos(UUID listingId) {
-        log.debug("List photos listingId=[{}]", listingId);
+        listingOwnershipVerifier.requireCanRead(listingId);
+
         return mediaObjectRepository.findAllByListingIdAndDeletedAtIsNullOrderByCreatedAtAsc(listingId);
     }
 
@@ -140,6 +158,13 @@ public class MediaService {
     public MediaObjectEntity getPhoto(UUID mediaId) {
         return mediaObjectRepository.findByIdAndDeletedAtIsNull(mediaId)
                 .orElseThrow(() -> new MediaNotFoundException(mediaId));
+    }
+
+    @Transactional(readOnly = true)
+    public MediaObjectEntity getPhotoForRead(UUID mediaId) {
+        MediaObjectEntity entity = getPhoto(mediaId);
+        listingOwnershipVerifier.requireCanRead(entity.getListingId());
+        return entity;
     }
 
     @Transactional
@@ -164,9 +189,7 @@ public class MediaService {
         }
 
         storageService.deleteObject(entity.getObjectKey());
-        if (entity.getThumbnailKey() != null && !entity.getThumbnailKey().isBlank()) {
-            storageService.deleteObject(entity.getThumbnailKey());
-        }
+        storageService.deleteObject(entity.getThumbnailKey());
 
         entity.markDeleted();
         mediaObjectRepository.save(entity);
@@ -185,14 +208,12 @@ public class MediaService {
     }
 
     @Transactional(readOnly = true)
-    public URL getPresignedUrl(UUID mediaId) {
-        MediaObjectEntity entity = getPhoto(mediaId);
+    public URL presignedUrlFor(MediaObjectEntity entity) {
         return storageService.presignedGetUrl(entity.getObjectKey());
     }
 
     @Transactional(readOnly = true)
-    public URL getPresignedThumbnailUrl(UUID mediaId) {
-        MediaObjectEntity entity = getPhoto(mediaId);
+    public URL presignedThumbnailUrlFor(MediaObjectEntity entity) {
         return storageService.presignedGetUrl(entity.getThumbnailKey());
     }
 }

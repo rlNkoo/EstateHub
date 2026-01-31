@@ -39,4 +39,22 @@ public class RestListingOwnershipVerifier implements ListingOwnershipVerifier {
 
         return listing.ownerId();
     }
+
+    @Override
+    public void requireCanRead(UUID listingId) {
+        var listing = listingServiceClient.getListing(listingId);
+
+        if ("PUBLISHED".equalsIgnoreCase(listing.status())) {
+            return;
+        }
+
+        CurrentUser user = currentUserProvider.requireCurrentUser();
+
+        boolean isAdmin = user.roles().contains("ADMIN");
+        boolean isOwner = user.userId().equals(listing.ownerId());
+
+        if (!isAdmin && !isOwner) {
+            throw new ListingOwnershipException(listingId);
+        }
+    }
 }

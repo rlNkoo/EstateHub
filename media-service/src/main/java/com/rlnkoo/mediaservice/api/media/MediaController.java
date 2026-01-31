@@ -30,8 +30,8 @@ public class MediaController {
     ) {
         MediaObjectEntity entity = mediaService.uploadPhoto(listingId, file);
 
-        URL url = mediaService.getPresignedUrl(entity.getId());
-        URL thumbUrl = mediaService.getPresignedThumbnailUrl(entity.getId());
+        URL url = mediaService.presignedUrlFor(entity);
+        URL thumbUrl = mediaService.presignedThumbnailUrlFor(entity);
 
         return UploadPhotoResponse.builder()
                 .mediaId(entity.getId())
@@ -47,29 +47,26 @@ public class MediaController {
 
         List<PhotoResponse> result = new ArrayList<>();
         for (MediaObjectEntity entity : photos) {
-            URL url = mediaService.getPresignedUrl(entity.getId());
-            URL thumbUrl = mediaService.getPresignedThumbnailUrl(entity.getId());
-
-            result.add(PhotoResponse.builder()
-                    .mediaId(entity.getId())
-                    .listingId(entity.getListingId())
-                    .contentType(entity.getContentType())
-                    .sizeBytes(entity.getSizeBytes())
-                    .sha256(entity.getSha256())
-                    .createdAt(entity.getCreatedAt())
-                    .url(url)
-                    .thumbnailUrl(thumbUrl)
-                    .build());
+            result.add(toPhotoResponse(entity));
         }
         return result;
     }
 
     @GetMapping("/photos/{mediaId}")
     public PhotoResponse getPhoto(@PathVariable("mediaId") UUID mediaId) {
-        MediaObjectEntity entity = mediaService.getPhoto(mediaId);
+        MediaObjectEntity entity = mediaService.getPhotoForRead(mediaId);
+        return toPhotoResponse(entity);
+    }
 
-        URL url = mediaService.getPresignedUrl(entity.getId());
-        URL thumbUrl = mediaService.getPresignedThumbnailUrl(entity.getId());
+    @DeleteMapping("/photos/{mediaId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePhoto(@PathVariable("mediaId") UUID mediaId) {
+        mediaService.deletePhoto(mediaId);
+    }
+
+    private PhotoResponse toPhotoResponse(MediaObjectEntity entity) {
+        URL url = mediaService.presignedUrlFor(entity);
+        URL thumbUrl = mediaService.presignedThumbnailUrlFor(entity);
 
         return PhotoResponse.builder()
                 .mediaId(entity.getId())
@@ -81,11 +78,5 @@ public class MediaController {
                 .url(url)
                 .thumbnailUrl(thumbUrl)
                 .build();
-    }
-
-    @DeleteMapping("/photos/{mediaId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePhoto(@PathVariable("mediaId") UUID mediaId) {
-        mediaService.deletePhoto(mediaId);
     }
 }

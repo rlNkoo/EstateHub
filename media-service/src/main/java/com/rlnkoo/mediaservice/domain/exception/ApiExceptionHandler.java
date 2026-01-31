@@ -2,6 +2,7 @@ package com.rlnkoo.mediaservice.domain.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -66,7 +67,7 @@ public class ApiExceptionHandler {
             FileTooLargeException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.PAYLOAD_TOO_LARGE, ex.getMessage(), request);
+        return build(HttpStatusCode.valueOf(413), ex.getMessage(), request);
     }
 
     @ExceptionHandler(StorageException.class)
@@ -74,7 +75,7 @@ public class ApiExceptionHandler {
             StorageException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), request);
+        return build(HttpStatusCode.valueOf(502), ex.getMessage(), request);
     }
 
     @ExceptionHandler(ExternalServiceException.class)
@@ -118,11 +119,15 @@ public class ApiExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", request);
     }
 
-    private ErrorResponse build(HttpStatus status, String message, HttpServletRequest request) {
+    private ErrorResponse build(
+            HttpStatusCode status,
+            String message,
+            HttpServletRequest request
+    ) {
         return new ErrorResponse(
                 Instant.now(),
                 status.value(),
-                status.getReasonPhrase(),
+                status.toString(),
                 message,
                 request.getRequestURI()
         );
