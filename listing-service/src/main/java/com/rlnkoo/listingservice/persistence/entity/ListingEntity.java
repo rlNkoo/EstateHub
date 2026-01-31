@@ -60,8 +60,4 @@ public class ListingEntity {
     public boolean isPublished() {
         return status == ListingStatus.PUBLISHED;
     }
-
-    public boolean hasActiveEdit() {
-        return publishedVersion != null && currentVersion > publishedVersion;
-    }
 }
