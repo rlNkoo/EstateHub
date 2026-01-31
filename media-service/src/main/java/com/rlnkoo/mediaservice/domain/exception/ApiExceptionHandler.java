@@ -45,7 +45,7 @@ public class ApiExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, ex, request);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, ValidationFailedException.class})
+    @ExceptionHandler({IllegalArgumentException.class, ValidationFailedException.class, InvalidMediaStateException.class})
     public ResponseEntity<ErrorResponse> handleBadRequest(
             RuntimeException ex,
             HttpServletRequest request
