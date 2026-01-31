@@ -17,6 +17,7 @@
         <spring-boot.version>4.0.1</spring-boot.version>
         <spring-cloud.version>2025.1.0</spring-cloud.version>
         <software.amazon.awssdk.version>2.40.8</software.amazon.awssdk.version>
+        <webp-imageio.version>0.2.2</webp-imageio.version>
         <common.security.version>0.0.1</common.security.version>
         <common.events.version>0.0.1</common.events.version>
     </properties>
@@ -55,6 +56,11 @@
                 <version>${software.amazon.awssdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gotson</groupId>
+                <artifactId>webp-imageio</artifactId>
+                <version>${webp-imageio.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.rlnkoo</groupId>
