@@ -13,6 +13,30 @@ import java.time.Instant;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    @ExceptionHandler(MediaNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMediaNotFound(
+            MediaNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.NOT_FOUND, ex, request);
+    }
+
+    @ExceptionHandler(MediaAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleMediaAccessDenied(
+            MediaAccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.FORBIDDEN, ex, request);
+    }
+
+    @ExceptionHandler(StorageOperationException.class)
+    public ResponseEntity<ErrorResponse> handleStorageOperation(
+            StorageOperationException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_GATEWAY, ex, request);
+    }
+
     @ExceptionHandler(AuthenticationRequiredException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationRequired(
             AuthenticationRequiredException ex,
