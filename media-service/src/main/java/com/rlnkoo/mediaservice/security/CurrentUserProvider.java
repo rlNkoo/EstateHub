@@ -17,14 +17,10 @@ public class CurrentUserProvider {
 
     public Optional<CurrentUser> getCurrentUserOptional() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return Optional.empty();
-        }
+        if (authentication == null) return Optional.empty();
 
         Object principal = authentication.getPrincipal();
-        if (!(principal instanceof Jwt jwt)) {
-            return Optional.empty();
-        }
+        if (!(principal instanceof Jwt jwt)) return Optional.empty();
 
         UUID userId = UUID.fromString(jwt.getSubject());
         String email = jwt.getClaimAsString(Claims.EMAIL);

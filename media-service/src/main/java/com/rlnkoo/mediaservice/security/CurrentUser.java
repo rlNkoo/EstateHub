@@ -10,5 +10,4 @@ public record CurrentUser(
         UUID userId,
         String email,
         Set<String> roles
-) {
-}
+) {}
