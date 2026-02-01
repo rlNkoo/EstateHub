@@ -29,7 +29,7 @@ public class MediaEventsConsumer {
             JsonNode payloadNode = root.path("payload");
 
             if (eventType == null) {
-                log.warn("Skipping media-event without eventType: {}", message);
+                log.warn("Skipping media-event without eventType: [{}]", message);
                 return;
             }
 
@@ -38,7 +38,7 @@ public class MediaEventsConsumer {
                     PhotoUploadedV1Payload payload =
                             objectMapper.treeToValue(payloadNode, PhotoUploadedV1Payload.class);
                     if (payload.listingId() == null || payload.mediaId() == null) {
-                        log.warn("Skipping PhotoUploadedV1 with missing ids: {}", payloadNode);
+                        log.warn("Skipping PhotoUploadedV1 with missing ids: [{}]", payloadNode);
                         return;
                     }
                     syncService.onPhotoUploaded(payload.listingId(), payload.mediaId());
@@ -47,15 +47,15 @@ public class MediaEventsConsumer {
                     PhotoDeletedV1Payload payload =
                             objectMapper.treeToValue(payloadNode, PhotoDeletedV1Payload.class);
                     if (payload.listingId() == null || payload.mediaId() == null) {
-                        log.warn("Skipping PhotoDeletedV1 with missing ids: {}", payloadNode);
+                        log.warn("Skipping PhotoDeletedV1 with missing ids: [{}]", payloadNode);
                         return;
                     }
                     syncService.onPhotoDeleted(payload.listingId(), payload.mediaId());
                 }
-                default -> log.debug("Ignoring eventType={}", eventType);
+                default -> log.debug("Ignoring eventType=[{}]", eventType);
             }
         } catch (Exception ex) {
-            log.error("Failed to process media-event: {}", message, ex);
+            log.error("Failed to process media-event: [{}]", message, ex);
             throw new RuntimeException(ex);
         }
     }
