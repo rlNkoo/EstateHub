@@ -104,4 +104,24 @@ public class ListingVersionEntity {
         @Column(name = "postal_code", length = 20)
         private String postalCode;
     }
+
+    public void addPhotoId(UUID mediaId) {
+        if (mediaId == null) return;
+
+        if (this.photoIds == null) {
+            this.photoIds = new ArrayList<>();
+        }
+
+        if (!this.photoIds.contains(mediaId)) {
+            this.photoIds.add(mediaId);
+        }
+    }
+
+    public void removePhotoId(UUID mediaId) {
+        if (mediaId == null) return;
+
+        if (this.photoIds != null) {
+            this.photoIds.remove(mediaId);
+        }
+    }
 }
