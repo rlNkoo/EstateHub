@@ -209,6 +209,104 @@ Thanks to event-based communication, other services are not directly coupled to 
 
 ---
 
+## Media Integration (Event-Driven)
+
+ListingService integrates with MediaService using asynchronous events.
+
+### Consumed Events (from `media-events` topic)
+
+- **PhotoUploadedV1**
+  - adds `mediaId` to the current readable listing version
+- **PhotoDeletedV1**
+  - removes `mediaId` from the listing version
+
+Photo changes are applied to the version currently used for reads:
+- published version for `PUBLISHED` listings
+- current draft version for `DRAFT` listings
+
+If a listing is `PUBLISHED`, photo changes trigger a `ListingUpdated` event.
+
+---
+
+## Events
+
+ListingService publishes domain events when the public state of a listing changes:
+
+- **ListingPublished** – when a draft listing is published
+- **ListingUpdated** – when published listing content (including photos) changes
+- **ListingArchived** – when a listing is archived
+
+Thanks to event-based communication, other services are not directly coupled to the listing database.
+
+---
+
+# MediaService
+
+MediaService is a microservice responsible for managing media files (photos) associated with real estate listings.  
+It handles secure upload, storage, processing, and controlled access to listing photos.
+
+The service integrates with external object storage (S3-compatible, MinIO) and communicates with other services using domain events.  
+It does not store media files in the database – only metadata and references.
+
+---
+
+## Responsibilities
+
+- validating uploaded media files (size, content type)
+- uploading original photos to object storage
+- generating and storing image thumbnails
+- managing media metadata
+- enforcing ownership and access rules
+- exposing presigned URLs for secure access
+- publishing media domain events (event-driven architecture)
+
+---
+
+## Architecture
+
+MediaService follows the same layered architecture as other services:
+
+- **API** – REST controllers and upload endpoints
+- **Domain** – media rules, ownership verification, and processing logic
+- **Persistence** – media metadata entities and repositories
+- **Storage** – S3-compatible object storage integration (MinIO)
+- **Security** – JWT-based authentication and ownership enforcement
+- **Events** – media event publishing
+- **Config / Exception** – technical configuration and global error handling
+
+---
+
+## Media Access Rules
+
+- Photos of published listings are publicly readable (via presigned URLs).
+- Photos of draft listings are accessible only to the listing owner or ADMIN users.
+- Upload and deletion are restricted to listing owners and ADMIN users.
+
+---
+
+## Endpoints
+
+### Authenticated
+- `POST /media/listings/{listingId}/photos` – upload a photo
+- `DELETE /media/photos/{mediaId}` – delete a photo
+
+### Public
+- `GET /media/listings/{listingId}/photos` – list photos for a listing
+- `GET /media/photos/{mediaId}` – retrieve photo metadata and URLs
+
+---
+
+## Events
+
+MediaService publishes domain events such as:
+
+- **PhotoUploadedV1**
+- **PhotoDeletedV1**
+
+These events are consumed by ListingService to keep listing photo references consistent.
+
+---
+
 ## 🧱 Infrastructure (Docker Compose)
 
 The project uses local infrastructure managed via **Docker Compose**.
