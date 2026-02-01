@@ -228,18 +228,6 @@ If a listing is `PUBLISHED`, photo changes trigger a `ListingUpdated` event.
 
 ---
 
-## Events
-
-ListingService publishes domain events when the public state of a listing changes:
-
-- **ListingPublished** – when a draft listing is published
-- **ListingUpdated** – when published listing content (including photos) changes
-- **ListingArchived** – when a listing is archived
-
-Thanks to event-based communication, other services are not directly coupled to the listing database.
-
----
-
 # MediaService
 
 MediaService is a microservice responsible for managing media files (photos) associated with real estate listings.  
