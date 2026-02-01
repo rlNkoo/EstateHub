@@ -50,21 +50,10 @@ public class MediaService {
 
         UUID ownerId = listingOwnershipVerifier.requireOwnerOrAdmin(listingId);
 
-        long activeCount = mediaObjectRepository.countByListingIdAndDeletedAtIsNull(listingId);
-        int max = mediaProperties.getMaxPhotosPerListing();
-        if (activeCount >= max) {
-            log.warn("Photo limit exceeded listingId=[{}] activeCount=[{}] max=[{}]", listingId, activeCount, max);
-            throw new PhotoLimitExceededException(listingId, max);
-        }
-
+        enforcePhotoLimit(listingId);
         fileValidationService.validate(file);
 
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (Exception ex) {
-            throw new StorageException("Cannot read uploaded file bytes", ex);
-        }
+        byte[] bytes = readBytes(file);
 
         String contentType = file.getContentType();
         String sha256 = hashingService.sha256Hex(bytes);
@@ -75,28 +64,7 @@ public class MediaService {
         String objectKey = objectKeyFactory.photoObjectKey(listingId, mediaId, extension);
         String thumbnailKey = objectKeyFactory.thumbnailObjectKey(listingId, mediaId);
 
-        try {
-            storageService.putObject(objectKey, bytes, contentType);
-
-            byte[] thumbBytes = imageProcessingService.createJpegThumbnail(bytes);
-            storageService.putObject(thumbnailKey, thumbBytes, "image/jpeg");
-        } catch (Exception ex) {
-            try {
-                storageService.deleteObject(objectKey);
-            } catch (Exception cleanupEx) {
-                log.warn("Cleanup failed for objectKey=[{}] message=[{}]", objectKey, cleanupEx.getMessage());
-            }
-            try {
-                storageService.deleteObject(thumbnailKey);
-            } catch (Exception cleanupEx) {
-                log.debug("Thumbnail cleanup skipped/failed thumbnailKey=[{}] message=[{}]",
-                        thumbnailKey, cleanupEx.getMessage());
-            }
-            if (ex instanceof RuntimeException re) {
-                throw re;
-            }
-            throw new StorageException("Upload failed", ex);
-        }
+        uploadToStorageOrCleanup(objectKey, thumbnailKey, bytes, contentType);
 
         MediaObjectEntity entity = MediaObjectEntity.builder()
                 .id(mediaId)
@@ -111,21 +79,7 @@ public class MediaService {
                 .createdAt(Instant.now())
                 .build();
 
-        try {
-            mediaObjectRepository.save(entity);
-        } catch (Exception ex) {
-            try {
-                storageService.deleteObject(objectKey);
-            } catch (Exception cleanupEx) {
-                log.warn("Cleanup failed for objectKey=[{}] message=[{}]", objectKey, cleanupEx.getMessage());
-            }
-            try {
-                storageService.deleteObject(thumbnailKey);
-            } catch (Exception cleanupEx) {
-                log.warn("Cleanup failed for thumbnailKey=[{}] message=[{}]", thumbnailKey, cleanupEx.getMessage());
-            }
-            throw ex;
-        }
+        saveToDbOrCleanup(entity, objectKey, thumbnailKey);
 
         eventsPublisher.publishPhotoUploaded(
                 listingId,
@@ -150,7 +104,6 @@ public class MediaService {
     @Transactional(readOnly = true)
     public List<MediaObjectEntity> listPhotos(UUID listingId) {
         listingOwnershipVerifier.requireCanRead(listingId);
-
         return mediaObjectRepository.findAllByListingIdAndDeletedAtIsNullOrderByCreatedAtAsc(listingId);
     }
 
@@ -180,16 +133,10 @@ public class MediaService {
             return;
         }
 
-        boolean isAdmin = user.roles().contains("ADMIN");
-        boolean isOwner = user.userId().equals(entity.getOwnerId());
-        if (!isAdmin && !isOwner) {
-            log.warn("Delete denied mediaId=[{}] ownerId=[{}] requesterId=[{}] roles=[{}]",
-                    mediaId, entity.getOwnerId(), user.userId(), user.roles());
-            throw new MediaOwnershipException(mediaId);
-        }
+        assertOwnerOrAdmin(user, entity);
 
-        storageService.deleteObject(entity.getObjectKey());
-        storageService.deleteObject(entity.getThumbnailKey());
+        safeDelete(entity.getObjectKey(), "objectKey");
+        safeDelete(entity.getThumbnailKey(), "thumbnailKey");
 
         entity.markDeleted();
         mediaObjectRepository.save(entity);
@@ -215,5 +162,76 @@ public class MediaService {
     @Transactional(readOnly = true)
     public URL presignedThumbnailUrlFor(MediaObjectEntity entity) {
         return storageService.presignedGetUrl(entity.getThumbnailKey());
+    }
+
+    private void enforcePhotoLimit(UUID listingId) {
+        long activeCount = mediaObjectRepository.countByListingIdAndDeletedAtIsNull(listingId);
+        int max = mediaProperties.getMaxPhotosPerListing();
+        if (activeCount >= max) {
+            log.warn("Photo limit exceeded listingId=[{}] activeCount=[{}] max=[{}]", listingId, activeCount, max);
+            throw new PhotoLimitExceededException(listingId, max);
+        }
+    }
+
+    private byte[] readBytes(MultipartFile file) {
+        try {
+            return file.getBytes();
+        } catch (Exception ex) {
+            throw new StorageException("Cannot read uploaded file bytes", ex);
+        }
+    }
+
+    private void uploadToStorageOrCleanup(
+            String objectKey,
+            String thumbnailKey,
+            byte[] bytes,
+            String contentType
+    ) {
+        try {
+            storageService.putObject(objectKey, bytes, contentType);
+
+            byte[] thumbBytes = imageProcessingService.createJpegThumbnail(bytes);
+            storageService.putObject(thumbnailKey, thumbBytes, "image/jpeg");
+        } catch (Exception ex) {
+            cleanupStorage(objectKey, thumbnailKey);
+
+            if (ex instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new StorageException("Upload failed", ex);
+        }
+    }
+
+    private void saveToDbOrCleanup(MediaObjectEntity entity, String objectKey, String thumbnailKey) {
+        try {
+            mediaObjectRepository.save(entity);
+        } catch (Exception ex) {
+            cleanupStorage(objectKey, thumbnailKey);
+            throw ex;
+        }
+    }
+
+    private void cleanupStorage(String objectKey, String thumbnailKey) {
+        safeDelete(objectKey, "objectKey");
+        safeDelete(thumbnailKey, "thumbnailKey");
+    }
+
+    private void safeDelete(String key, String label) {
+        if (key == null || key.isBlank()) return;
+        try {
+            storageService.deleteObject(key);
+        } catch (Exception ex) {
+            log.warn("Cleanup/delete failed for {}=[{}] message=[{}]", label, key, ex.getMessage());
+        }
+    }
+
+    private void assertOwnerOrAdmin(CurrentUser user, MediaObjectEntity entity) {
+        boolean isAdmin = user.roles().contains("ADMIN");
+        boolean isOwner = user.userId().equals(entity.getOwnerId());
+        if (!isAdmin && !isOwner) {
+            log.warn("Delete denied mediaId=[{}] ownerId=[{}] requesterId=[{}] roles=[{}]",
+                    entity.getId(), entity.getOwnerId(), user.userId(), user.roles());
+            throw new MediaOwnershipException(entity.getId());
+        }
     }
 }
