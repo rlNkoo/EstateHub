@@ -3,11 +3,14 @@ package com.rlnkoo.mediaservice.domain.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 import java.time.Instant;
 
@@ -15,7 +18,7 @@ import java.time.Instant;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(AuthenticationRequiredException.class)
-    public ErrorResponse handleAuthenticationRequired(
+    public ResponseEntity<ErrorResponse> handleAuthenticationRequired(
             AuthenticationRequiredException ex,
             HttpServletRequest request
     ) {
@@ -23,7 +26,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ListingNotFoundException.class)
-    public ErrorResponse handleListingNotFound(
+    public ResponseEntity<ErrorResponse> handleListingNotFound(
             ListingNotFoundException ex,
             HttpServletRequest request
     ) {
@@ -31,7 +34,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MediaNotFoundException.class)
-    public ErrorResponse handleMediaNotFound(
+    public ResponseEntity<ErrorResponse> handleMediaNotFound(
             MediaNotFoundException ex,
             HttpServletRequest request
     ) {
@@ -39,7 +42,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({ListingOwnershipException.class, MediaOwnershipException.class})
-    public ErrorResponse handleOwnership(
+    public ResponseEntity<ErrorResponse> handleOwnership(
             RuntimeException ex,
             HttpServletRequest request
     ) {
@@ -47,7 +50,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(PhotoLimitExceededException.class)
-    public ErrorResponse handlePhotoLimit(
+    public ResponseEntity<ErrorResponse> handlePhotoLimit(
             PhotoLimitExceededException ex,
             HttpServletRequest request
     ) {
@@ -55,31 +58,39 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(InvalidContentTypeException.class)
-    public ErrorResponse handleInvalidContentType(
+    public ResponseEntity<ErrorResponse> handleInvalidContentType(
             InvalidContentTypeException ex,
             HttpServletRequest request
     ) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
+    @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
+    public ResponseEntity<ErrorResponse> handleMultipartTooLarge(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "File too large", request);
+    }
+
     @ExceptionHandler(FileTooLargeException.class)
-    public ErrorResponse handleFileTooLarge(
+    public ResponseEntity<ErrorResponse> handleFileTooLarge(
             FileTooLargeException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatusCode.valueOf(413), ex.getMessage(), request);
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, ex.getMessage(), request);
     }
 
     @ExceptionHandler(StorageException.class)
-    public ErrorResponse handleStorage(
+    public ResponseEntity<ErrorResponse> handleStorage(
             StorageException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatusCode.valueOf(502), ex.getMessage(), request);
+        return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), request);
     }
 
     @ExceptionHandler(ExternalServiceException.class)
-    public ErrorResponse handleExternalService(
+    public ResponseEntity<ErrorResponse> handleExternalService(
             ExternalServiceException ex,
             HttpServletRequest request
     ) {
@@ -87,7 +98,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({AuthorizationDeniedException.class, AccessDeniedException.class})
-    public ErrorResponse handleAccessDenied(
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
             Exception ex,
             HttpServletRequest request
     ) {
@@ -95,7 +106,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ErrorResponse handleAuthentication(
+    public ResponseEntity<ErrorResponse> handleAuthentication(
             AuthenticationException ex,
             HttpServletRequest request
     ) {
@@ -103,7 +114,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ErrorResponse handleIllegalArgument(
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
             IllegalArgumentException ex,
             HttpServletRequest request
     ) {
@@ -111,7 +122,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ErrorResponse handleOtherExceptions(
+    public ResponseEntity<ErrorResponse> handleOtherExceptions(
             Exception ex,
             HttpServletRequest request
     ) {
@@ -119,17 +130,23 @@ public class ApiExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", request);
     }
 
-    private ErrorResponse build(
+    private ResponseEntity<ErrorResponse> build(
             HttpStatusCode status,
             String message,
             HttpServletRequest request
     ) {
-        return new ErrorResponse(
+        String errorText = (status instanceof HttpStatus hs)
+                ? hs.getReasonPhrase()
+                : "HTTP " + status.value();
+
+        ErrorResponse body = new ErrorResponse(
                 Instant.now(),
                 status.value(),
-                status.toString(),
+                errorText,
                 message,
                 request.getRequestURI()
         );
+
+        return ResponseEntity.status(status.value()).body(body);
     }
 }

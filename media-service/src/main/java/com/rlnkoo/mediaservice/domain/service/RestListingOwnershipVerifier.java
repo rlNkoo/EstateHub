@@ -1,5 +1,6 @@
 package com.rlnkoo.mediaservice.domain.service;
 
+import com.rlnkoo.mediaservice.domain.exception.ExternalServiceException;
 import com.rlnkoo.mediaservice.domain.exception.ListingOwnershipException;
 import com.rlnkoo.mediaservice.integration.listing.ListingServiceClient;
 import com.rlnkoo.mediaservice.integration.listing.dto.ListingDetailsDto;
@@ -22,13 +23,20 @@ public class RestListingOwnershipVerifier implements ListingOwnershipVerifier {
     @Override
     public UUID requireOwnerOrAdmin(UUID listingId) {
         CurrentUser user = currentUserProvider.requireCurrentUser();
+        ListingDetailsDto listing = listingServiceClient.getListing(listingId);
 
-        if (user.roles().contains("ADMIN")) {
-            ListingDetailsDto listing = listingServiceClient.getListing(listingId);
-            return listing.ownerId();
+        if (listing.ownerId() == null) {
+            log.error("ListingService returned null ownerId listingId=[{}] status=[{}]", listingId, listing.status());
+            throw new ExternalServiceException(
+                    "listing-service",
+                    "Listing ownership data missing for listing " + listingId,
+                    null
+            );
         }
 
-        ListingDetailsDto listing = listingServiceClient.getListing(listingId);
+        if (user.roles().contains("ADMIN")) {
+            return listing.ownerId();
+        }
 
         boolean isOwner = user.userId().equals(listing.ownerId());
         if (!isOwner) {
@@ -42,7 +50,7 @@ public class RestListingOwnershipVerifier implements ListingOwnershipVerifier {
 
     @Override
     public void requireCanRead(UUID listingId) {
-        var listing = listingServiceClient.getListing(listingId);
+        ListingDetailsDto listing = listingServiceClient.getListing(listingId);
 
         if ("PUBLISHED".equalsIgnoreCase(listing.status())) {
             return;
@@ -51,7 +59,7 @@ public class RestListingOwnershipVerifier implements ListingOwnershipVerifier {
         CurrentUser user = currentUserProvider.requireCurrentUser();
 
         boolean isAdmin = user.roles().contains("ADMIN");
-        boolean isOwner = user.userId().equals(listing.ownerId());
+        boolean isOwner = listing.ownerId() != null && user.userId().equals(listing.ownerId());
 
         if (!isAdmin && !isOwner) {
             throw new ListingOwnershipException(listingId);
