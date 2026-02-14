@@ -11,8 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EventEnvelopeReader {
 
-    private static final TypeReference<EventEnvelope<JsonNode>> ENVELOPE_JSON =
-            new TypeReference<>() {};
+    private static final TypeReference<EventEnvelope<JsonNode>> ENVELOPE_JSON = new TypeReference<>() {};
 
     private final ObjectMapper objectMapper;
 
