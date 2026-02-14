@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Listing updated</title></head>
+<body>
+<p>Hello <span th:text="${email}">user@example.com</span>,</p>
+<p>Your listing has been updated.</p>
+
+<p>
+    Listing: <strong th:text="${title}">Title</strong><br/>
+    Listing ID: <span th:text="${listingId}">id</span><br/>
+    Version: <span th:text="${version}">1</span>
+</p>
+
+<p>
+    View your listing:
+    <a th:href="${listingLink}" th:text="${listingLink}">listing-link</a>
+</p>
+</body>
+</html>

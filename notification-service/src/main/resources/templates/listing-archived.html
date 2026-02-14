@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Listing archived</title></head>
+<body>
+<p>Hello <span th:text="${email}">user@example.com</span>,</p>
+<p>Your listing has been archived.</p>
+
+<p>
+    Listing ID: <span th:text="${listingId}">id</span><br/>
+    Archived at: <span th:text="${archivedAt}">time</span>
+</p>
+</body>
+</html>
