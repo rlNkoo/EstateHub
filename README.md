@@ -1,5 +1,20 @@
 # EstateHub – Infrastructure & Services
 
+---
+
+## Services and Ports
+
+| Service | Docker Image | Port |
+|-------|--------------|------|
+| API Gateway | estatehub/gateway-service | 8080 |
+| User Service | estatehub/user-service | 8081 |
+| Listing Service | estatehub/listing-service | 8082 |
+| Media Service | estatehub/media-service | 8083 |
+| Search Service | estatehub/search-service | 8084 |
+| Notification Service | estatehub/notification-service | 8085 |
+
+---
+
 # UserService
 
 UserService is a microservice responsible for user management and security within the system.  
@@ -71,42 +86,6 @@ UserService publishes domain events such as:
 - password reset requested / confirmed
 
 Thanks to event-based communication, other services are not directly coupled to the user database.
-
----
-
-# ListingService
-
-ListingService is a microservice responsible for managing real estate listings and their lifecycle.  
-It handles listing creation, versioned content management, publication, controlled editing of published listings, and archiving.
-
-The service enforces ownership rules, lifecycle transitions, and strict separation between public and internal views of listing content.  
-All communication with other services is asynchronous and event-driven.
-
----
-
-## Responsibilities
-
-- creation and management of listing drafts
-- versioned editing of listing content
-- publication of listings
-- controlled modification of published listings
-- archiving listings
-- enforcing ownership and role-based access rules
-- exposing public read access for published listings
-- publishing domain events
-
----
-
-## Architecture
-
-ListingService follows the same layered architecture pattern as other services:
-
-- **API** – REST controllers and request/response DTOs
-- **Domain** – business rules and lifecycle logic
-- **Persistence** – JPA entities and repositories
-- **Security** – ownership and authorization enforcement
-- **Events** – domain event publishing
-- **Exception** – global error handling
 
 ---
 
@@ -295,6 +274,145 @@ These events are consumed by ListingService to keep listing photo references con
 
 ---
 
+# NotificationService
+
+NotificationService is a microservice responsible for sending transactional emails based on domain events.  
+It consumes events from Kafka and delivers email notifications to end users without direct coupling to other services’ databases.
+
+The service is fully event-driven and operates asynchronously.
+
+---
+
+## Responsibilities
+
+- consuming domain events from Kafka (`user-events`, `listing-events`)
+- sending transactional emails (registration, activation, password reset, listing lifecycle)
+- maintaining a local read model for resolving `userId → email`
+- ensuring idempotent event processing
+- logging notification delivery status (`SENT`, `FAILED`)
+- safe handling of event reprocessing (at-least-once delivery)
+
+---
+
+## Architecture
+
+NotificationService follows the same layered architecture pattern as other services:
+
+- **Domain** – notification orchestration and processing logic
+- **Persistence** – notification logs and user email index
+- **Integration (Kafka)** – event consumers and deserialization
+- **Mail** – Thymeleaf template rendering and SMTP delivery
+- **Config / Exception** – technical configuration and global error handling
+
+The service does not expose public business endpoints and is not routed through the API Gateway.
+
+---
+
+## Event Consumption
+
+NotificationService consumes events from the following Kafka topics:
+
+### From `user-events`
+- **UserRegisteredV1**
+- **UserActivatedV1**
+- **PasswordResetRequestedV1**
+- **PasswordResetCompletedV1**
+
+### From `listing-events`
+- **ListingPublishedV1**
+- **ListingUpdatedV1**
+- **ListingArchivedV1**
+
+Events are deserialized using the shared `EventEnvelope` from the `common-events` module.
+
+Each event is processed exactly once using **eventId-based idempotency**.
+
+---
+
+## Idempotency & Delivery Log
+
+Every processed event is stored in the `notification_log` table.
+
+The log contains:
+- `eventId` (unique constraint)
+- `eventType`
+- recipient email
+- related `userId` / `listingId`
+- status: `RECEIVED → SENT → FAILED`
+- number of delivery attempts
+- error details
+- timestamps
+
+This ensures safe retries and operational visibility.
+
+---
+
+## User Email Read Model
+
+Listing events contain only `ownerId`, so NotificationService maintains a local read model:
+
+```
+user_email_index
+```
+
+This table is populated from user-related events and allows resolving:
+
+```
+userId → email
+```
+
+This keeps the system fully event-driven and avoids synchronous calls to UserService.
+
+---
+
+## Email Delivery
+
+Emails are sent using:
+
+- Spring Mail
+- Thymeleaf templates
+- SMTP (MailHog in local development)
+
+Transactional emails include:
+
+### User Lifecycle
+- registration (activation token)
+- account activated
+- password reset requested (reset token)
+- password reset completed
+
+### Listing Lifecycle
+- listing published
+- listing updated
+- listing archived
+
+Emails contain tokens for backend confirmation flows and instructions for API usage.
+
+---
+
+## Processing Flow
+
+1. A business service publishes a domain event.
+2. Kafka delivers the event to NotificationService.
+3. The service:
+  - checks idempotency using `eventId`
+  - resolves the recipient email
+  - renders the appropriate email template
+  - sends the email via SMTP
+  - updates the `notification_log` status
+
+---
+
+## Failure Handling
+
+If email delivery fails:
+
+- the notification is marked as `FAILED`
+- error details are stored in the log
+- the event can be safely retried without duplication
+
+---
+
 ## 🧱 Infrastructure (Docker Compose)
 
 The project uses local infrastructure managed via **Docker Compose**.
@@ -456,19 +574,6 @@ exit
 
 The project consists of multiple Spring Boot microservices.
 Each service is built as a separate Docker image using **Java 25**.
-
----
-
-## Services and Ports
-
-| Service | Docker Image | Port |
-|-------|--------------|------|
-| API Gateway | estatehub/gateway-service | 8080 |
-| User Service | estatehub/user-service | 8081 |
-| Listing Service | estatehub/listing-service | 8082 |
-| Media Service | estatehub/media-service | 8083 |
-| Search Service | estatehub/search-service | 8084 |
-| Notification Service | estatehub/notification-service | 8085 |
 
 ---
 
