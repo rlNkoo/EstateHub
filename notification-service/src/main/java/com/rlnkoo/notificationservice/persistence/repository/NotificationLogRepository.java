@@ -7,8 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface NotificationLogRepository extends JpaRepository<NotificationLogEntity, UUID> {
-
-    boolean existsByEventId(UUID eventId);
-
     Optional<NotificationLogEntity> findByEventId(UUID eventId);
 }

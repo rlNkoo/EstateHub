@@ -26,17 +26,12 @@ public class UserNotificationService {
         userEmailIndexService.upsert(payload.userId(), payload.email());
 
         boolean firstTime = logService.tryMarkReceived(envelope, payload.email(), payload.userId(), null);
-        if (!firstTime) {
-            logDuplicate(envelope);
-            return;
-        }
+        if (!firstTime) { logDuplicate(envelope); return; }
 
         try {
-            String activationLink = baseUrl + "/activate?token=" + payload.activationToken();
-
             var model = new HashMap<String, Object>();
             model.put("email", payload.email());
-            model.put("activationLink", activationLink);
+            model.put("activationToken", payload.activationToken());
 
             var msg = new EmailMessage(
                     payload.email(),
@@ -50,7 +45,7 @@ public class UserNotificationService {
 
         } catch (Exception ex) {
             logService.markFailed(envelope.eventId(), ex);
-            log.error("Failed to send UserRegistered email. eventId={}, userId={}",
+            log.error("Failed to send UserRegistered email. eventId=[{}], userId=[{}]",
                     envelope.eventId(), payload.userId(), ex);
             throw ex;
         }
@@ -82,7 +77,7 @@ public class UserNotificationService {
 
         } catch (Exception ex) {
             logService.markFailed(envelope.eventId(), ex);
-            log.error("Failed to send UserActivated email. eventId={}, userId={}",
+            log.error("Failed to send UserActivated email. eventId=[{}], userId=[{}]",
                     envelope.eventId(), payload.userId(), ex);
             throw ex;
         }
@@ -92,17 +87,12 @@ public class UserNotificationService {
         userEmailIndexService.upsert(payload.userId(), payload.email());
 
         boolean firstTime = logService.tryMarkReceived(envelope, payload.email(), payload.userId(), null);
-        if (!firstTime) {
-            logDuplicate(envelope);
-            return;
-        }
+        if (!firstTime) { logDuplicate(envelope); return; }
 
         try {
-            String resetLink = baseUrl + "/reset-password?token=" + payload.resetToken();
-
             var model = new HashMap<String, Object>();
             model.put("email", payload.email());
-            model.put("resetLink", resetLink);
+            model.put("resetToken", payload.resetToken());
 
             var msg = new EmailMessage(
                     payload.email(),
@@ -116,7 +106,7 @@ public class UserNotificationService {
 
         } catch (Exception ex) {
             logService.markFailed(envelope.eventId(), ex);
-            log.error("Failed to send PasswordResetRequested email. eventId={}, userId={}",
+            log.error("Failed to send PasswordResetRequested email. eventId=[{}], userId=[{}]",
                     envelope.eventId(), payload.userId(), ex);
             throw ex;
         }
@@ -148,13 +138,13 @@ public class UserNotificationService {
 
         } catch (Exception ex) {
             logService.markFailed(envelope.eventId(), ex);
-            log.error("Failed to send PasswordResetCompleted email. eventId={}, userId={}",
+            log.error("Failed to send PasswordResetCompleted email. eventId=[{}], userId=[{}]",
                     envelope.eventId(), payload.userId(), ex);
             throw ex;
         }
     }
 
     private void logDuplicate(EventEnvelope<?> envelope) {
-        log.info("Duplicate event ignored. eventId={}, eventType={}", envelope.eventId(), envelope.eventType());
+        log.info("Duplicate event ignored. eventId=[{}], eventType=[{}]", envelope.eventId(), envelope.eventType());
     }
 }

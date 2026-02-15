@@ -53,7 +53,7 @@ public class ListingNotificationService {
 
         } catch (Exception ex) {
             logService.markFailed(envelope.eventId(), ex);
-            log.error("Failed to send ListingPublished email. eventId={}, listingId={}, ownerId={}",
+            log.error("Failed to send ListingPublished email. eventId=[{}], listingId=[{}], ownerId=[{}]",
                     envelope.eventId(), payload.listingId(), payload.ownerId(), ex);
             throw ex;
         }
@@ -90,7 +90,7 @@ public class ListingNotificationService {
 
         } catch (Exception ex) {
             logService.markFailed(envelope.eventId(), ex);
-            log.error("Failed to send ListingUpdated email. eventId={}, listingId={}, ownerId={}",
+            log.error("Failed to send ListingUpdated email. eventId=[{}], listingId=[{}], ownerId=[{}]",
                     envelope.eventId(), payload.listingId(), payload.ownerId(), ex);
             throw ex;
         }
@@ -123,13 +123,13 @@ public class ListingNotificationService {
 
         } catch (Exception ex) {
             logService.markFailed(envelope.eventId(), ex);
-            log.error("Failed to send ListingArchived email. eventId={}, listingId={}, ownerId={}",
+            log.error("Failed to send ListingArchived email. eventId=[{}], listingId=[{}], ownerId=[{}]",
                     envelope.eventId(), payload.listingId(), payload.ownerId(), ex);
             throw ex;
         }
     }
 
     private void logDuplicate(EventEnvelope<?> envelope) {
-        log.info("Duplicate event ignored. eventId={}, eventType={}", envelope.eventId(), envelope.eventType());
+        log.info("Duplicate event ignored. eventId=[{}], eventType=[{}]", envelope.eventId(), envelope.eventType());
     }
 }
