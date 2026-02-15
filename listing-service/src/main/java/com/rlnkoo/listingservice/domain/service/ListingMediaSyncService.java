@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -25,74 +26,91 @@ public class ListingMediaSyncService {
 
     @Transactional
     public void onPhotoUploaded(UUID listingId, UUID mediaId) {
-        ListingEntity listing = listingRepository.findById(listingId)
-                .orElseGet(() -> {
-                    log.warn("PhotoUploaded ignored: listing not found listingId=[{}] mediaId=[{}]", listingId, mediaId);
-                    return null;
-                });
-
-        if (listing == null) return;
-
-        ListingVersionEntity version = loadVersionToUpdate(listing);
-
-        int before = version.getPhotoIds() == null ? 0 : version.getPhotoIds().size();
-        version.addPhotoId(mediaId);
-        versionRepository.save(version);
-
-        int after = version.getPhotoIds() == null ? 0 : version.getPhotoIds().size();
-        log.info("Photo added listingId=[{}] versionNo=[{}] mediaId=[{}] {}->{}",
-                listingId, version.getVersionNo(), mediaId, before, after);
-
-        if (listing.getStatus() == ListingStatus.PUBLISHED) {
-            eventsPublisher.publishListingUpdated(
-                    listingId,
-                    toUpdatedPayload(listing, version)
-            );
-            log.info("ListingUpdated published (photo added) listingId=[{}] version=[{}]", listingId, version.getVersionNo());
-        }
+        applyPhotoChange(listingId, mediaId, true);
     }
 
     @Transactional
     public void onPhotoDeleted(UUID listingId, UUID mediaId) {
+        applyPhotoChange(listingId, mediaId, false);
+    }
+
+    private void applyPhotoChange(UUID listingId, UUID mediaId, boolean add) {
         ListingEntity listing = listingRepository.findById(listingId)
                 .orElseGet(() -> {
-                    log.warn("PhotoDeleted ignored: listing not found listingId=[{}] mediaId=[{}]", listingId, mediaId);
+                    log.warn("PhotoChange ignored: listing not found listingId=[{}] mediaId=[{}] add=[{}]",
+                            listingId, mediaId, add);
                     return null;
                 });
-
         if (listing == null) return;
 
-        ListingVersionEntity version = loadVersionToUpdate(listing);
+        ListingVersionEntity base = loadVersionToRead(listing);
 
-        int before = version.getPhotoIds() == null ? 0 : version.getPhotoIds().size();
-        version.removePhotoId(mediaId);
-        versionRepository.save(version);
+        int newVersionNo = listing.getCurrentVersion() + 1;
 
-        int after = version.getPhotoIds() == null ? 0 : version.getPhotoIds().size();
-        log.info("Photo removed listingId=[{}] versionNo=[{}] mediaId=[{}] {}->{}",
-                listingId, version.getVersionNo(), mediaId, before, after);
+        List<UUID> newPhotoIds = base.getPhotoIds() == null
+                ? new java.util.ArrayList<>()
+                : new java.util.ArrayList<>(base.getPhotoIds());
 
-        if (listing.getStatus() == ListingStatus.PUBLISHED) {
-            eventsPublisher.publishListingUpdated(
-                    listingId,
-                    toUpdatedPayload(listing, version)
-            );
-            log.info("ListingUpdated published (photo removed) listingId=[{}] version=[{}]", listingId, version.getVersionNo());
+        int before = newPhotoIds.size();
+        if (add) {
+            if (!newPhotoIds.contains(mediaId)) newPhotoIds.add(mediaId);
+        } else {
+            newPhotoIds.remove(mediaId);
+        }
+        int after = newPhotoIds.size();
+
+        if (before == after) {
+            log.info("PhotoChange no-op listingId=[{}] baseVersion=[{}] mediaId=[{}] add=[{}]",
+                    listingId, base.getVersionNo(), mediaId, add);
+            return;
+        }
+
+        ListingVersionEntity next = ListingVersionEntity.builder()
+                .id(UUID.randomUUID())
+                .listingId(listingId)
+                .versionNo(newVersionNo)
+                .title(base.getTitle())
+                .description(base.getDescription())
+                .priceAmount(base.getPriceAmount())
+                .currencyCode(base.getCurrencyCode())
+                .address(base.getAddress())
+                .area(base.getArea())
+                .rooms(base.getRooms())
+                .floor(base.getFloor())
+                .propertyType(base.getPropertyType())
+                .photoIds(List.copyOf(newPhotoIds))
+                .build();
+
+        versionRepository.save(next);
+        listing.setCurrentVersion(newVersionNo);
+
+        boolean liveUpdate = listing.getStatus() == ListingStatus.PUBLISHED;
+        if (liveUpdate) {
+            listing.setPublishedVersion(newVersionNo);
+        }
+
+        listingRepository.save(listing);
+
+        log.info("PhotoChange applied listingId=[{}] {} mediaId=[{}] {}->{} newVersion=[{}] live=[{}]",
+                listingId, add ? "ADD" : "REMOVE", mediaId, before, after, newVersionNo, liveUpdate);
+
+        if (liveUpdate) {
+            eventsPublisher.publishListingUpdated(listingId, toUpdatedPayload(listing, next));
+            log.info("ListingUpdated published (photo change) listingId=[{}] version=[{}]", listingId, newVersionNo);
         }
     }
 
-    private ListingVersionEntity loadVersionToUpdate(ListingEntity listing) {
-        int versionNoToUpdate;
-
+    private ListingVersionEntity loadVersionToRead(ListingEntity listing) {
+        int versionNo;
         if (listing.getStatus() == ListingStatus.PUBLISHED && listing.getPublishedVersion() != null) {
-            versionNoToUpdate = listing.getPublishedVersion();
+            versionNo = listing.getPublishedVersion();
         } else {
-            versionNoToUpdate = listing.getCurrentVersion();
+            versionNo = listing.getCurrentVersion();
         }
 
-        return versionRepository.findByListingIdAndVersionNo(listing.getId(), versionNoToUpdate)
+        return versionRepository.findByListingIdAndVersionNo(listing.getId(), versionNo)
                 .orElseThrow(() -> new IllegalStateException(
-                        "Listing version not found for listingId=" + listing.getId() + " versionNo=" + versionNoToUpdate
+                        "Listing version not found for listingId=" + listing.getId() + " versionNo=" + versionNo
                 ));
     }
 
