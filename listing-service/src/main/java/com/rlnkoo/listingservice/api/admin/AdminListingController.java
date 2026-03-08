@@ -21,8 +21,8 @@ public class AdminListingController {
     @GetMapping("/listings/published")
     @PreAuthorize("hasRole('ADMIN')")
     public PublishedListingsPageResponse getPublishedListingsForReindex(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "100") int size
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "100") int size
     ) {
         log.info("Admin published listings request received page=[{}] size=[{}]", page, size);
         return adminListingQueryService.getPublishedListingsForReindex(page, size);
