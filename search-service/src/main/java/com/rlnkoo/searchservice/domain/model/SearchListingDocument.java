@@ -19,7 +19,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "#{@searchProperties.indexName}")
+@Document(indexName = "listings")
 public class SearchListingDocument {
 
     @Id

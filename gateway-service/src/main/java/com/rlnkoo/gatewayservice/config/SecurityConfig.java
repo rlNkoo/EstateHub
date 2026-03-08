@@ -34,6 +34,8 @@ public class SecurityConfig {
                         .pathMatchers("/auth/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/listings/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/media/**").permitAll()
+                        .pathMatchers("/search/admin/**").authenticated()
+                        .pathMatchers(HttpMethod.GET, "/search/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
