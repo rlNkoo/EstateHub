@@ -597,13 +597,14 @@ All required supporting services (database, messaging, search, storage) are defi
 
 ### Services in docker-compose.yml
 
-| Component | Purpose | Default Port |
-|---------|--------|--------------|
-| PostgreSQL | Relational database (users, listings, etc.) | 5432 |
-| Kafka | Event streaming / async communication | 9092 |
+| Component     | Purpose | Default Port |
+|---------------|--------|--------------|
+| PostgreSQL    | Relational database (users, listings, etc.) | 5432 |
+| Kafka         | Event streaming / async communication | 9092 |
 | Elasticsearch | Search & indexing engine | 9200 |
-| Kibana | Elasticsearch UI | 5601 |
-| MinIO | S3-compatible object storage (media files) | 9000 (API), 9001 (Console) |
+| Kibana        | Elasticsearch UI | 5601 |
+| Mailhog       | SMTP email testing | 8025 |
+| MinIO         | S3-compatible object storage (media files) | 9000 (API), 9001 (Console) |
 
 Data is persisted using Docker volumes, so container restarts do not remove stored data.
 
