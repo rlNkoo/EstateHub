@@ -11,6 +11,7 @@ public record SearchListingsResponse(
         int totalPages,
         int page,
         int size,
-        String sort
+        String sort,
+        SearchFacetsResponse facets
 ) {
 }
