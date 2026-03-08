@@ -207,6 +207,43 @@ If a listing is `PUBLISHED`, photo changes trigger a `ListingUpdated` event.
 
 ---
 
+## Search Service Integration
+
+ListingService integrates with **SearchService** to provide fast
+searching and filtering of published listings.
+
+The integration is event‑driven. Whenever the public state of a listing
+changes, ListingService publishes events that are consumed by
+SearchService to update the Elasticsearch index.
+
+### Published Events
+
+-   **ListingPublishedV1**
+-   **ListingUpdatedV1**
+-   **ListingArchivedV1**
+
+### Reindex Source Endpoint
+
+ListingService exposes an administrative endpoint used by SearchService
+when rebuilding the search index:
+
+`GET /admin/listings/published`
+
+The endpoint returns paginated data for all published listings
+including:
+
+-   listing metadata
+-   versioned content
+-   address data
+-   price and area
+-   property attributes
+-   photo identifiers
+
+This endpoint is intended strictly for **search index rebuild
+operations** and requires the `ADMIN` role.
+
+---
+
 # MediaService
 
 MediaService is a microservice responsible for managing media files (photos) associated with real estate listings.  
@@ -271,6 +308,146 @@ MediaService publishes domain events such as:
 - **PhotoDeletedV1**
 
 These events are consumed by ListingService to keep listing photo references consistent.
+
+---
+
+# SearchService
+
+SearchService is a microservice responsible for **searching, filtering,
+and indexing listings**.
+
+It provides a fast read model backed by **Elasticsearch**.\
+Unlike other services, SearchService does not own listing data. Instead,
+it builds and maintains a search index based on events published by
+ListingService.
+
+---
+
+## Responsibilities
+
+-   maintaining Elasticsearch index of listings
+-   providing search and filtering API
+-   processing listing lifecycle events
+-   supporting full index rebuilds
+-   exposing administrative diagnostics endpoints
+
+---
+
+## Architecture
+
+SearchService follows the same layered architecture pattern:
+
+-   **API** -- search controllers and DTOs
+-   **Domain** -- search orchestration and indexing logic
+-   **Persistence** -- Elasticsearch repositories and documents
+-   **Integration** -- Kafka event consumers
+-   **Security** -- JWT authentication for administrative endpoints
+-   **Config / Exception** -- technical configuration and global error
+    handling
+
+---
+
+## Search Model
+
+SearchService stores listing documents in Elasticsearch using:
+
+`SearchListingDocument`
+
+Each document contains:
+
+-   listing id
+-   title and description
+-   price and currency
+-   address data
+-   property attributes (area, rooms, floor)
+-   photo identifiers
+-   publication timestamp
+
+Only listings with status **PUBLISHED** are indexed.
+
+---
+
+## Event‑Driven Index Updates
+
+SearchService consumes events from the **listing-events** Kafka topic.
+
+### Consumed Events
+
+-   **ListingPublishedV1** -- creates a new document
+-   **ListingUpdatedV1** -- updates the document
+-   **ListingArchivedV1** -- removes the document
+
+This keeps the search index synchronized with the public state of
+listings.
+
+---
+
+## Public Endpoints
+
+### Search Listings
+
+`GET /search/listings`
+
+Supports filtering by:
+
+-   full‑text query
+-   city / country
+-   price range
+-   area range
+-   rooms
+-   floor
+-   property type
+
+Also supports:
+
+-   pagination
+-   sorting
+
+---
+
+### Get Listing
+
+`GET /search/listings/{listingId}`
+
+Returns a single listing document from the search index.
+
+---
+
+## Administrative Endpoints
+
+### Index Info
+
+`GET /search/admin/index-info`
+
+Returns:
+
+-   index name
+-   existence status
+-   number of indexed documents
+
+Requires `ADMIN` role.
+
+---
+
+### Reindex
+
+`POST /search/admin/reindex`
+
+Triggers a full rebuild of the Elasticsearch index.
+
+Process:
+
+1.  SearchService calls\
+    `ListingService → /admin/listings/published`
+2.  Fetches all listings page by page
+3.  Recreates Elasticsearch documents
+4.  Rebuilds the search index
+
+Used for:
+
+-   disaster recovery
+-   index rebuilds
+-   schema changes
 
 ---
 
