@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -116,14 +115,6 @@ public class ListingIndexingService {
         }
 
         log.debug("Archived listing not found in index listingId=[{}]", listingId);
-    }
-
-    public Optional<SearchListingDocument> findById(UUID listingId) {
-        return searchListingRepository.findById(listingId);
-    }
-
-    public boolean existsById(UUID listingId) {
-        return searchListingRepository.existsById(listingId);
     }
 
     private boolean isPublished(String status) {

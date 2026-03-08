@@ -1,7 +1,5 @@
 package com.rlnkoo.searchservice.api.search.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.rlnkoo.searchservice.config.PlainBigDecimalSerializer;
 import lombok.Builder;
 
 import java.math.BigDecimal;

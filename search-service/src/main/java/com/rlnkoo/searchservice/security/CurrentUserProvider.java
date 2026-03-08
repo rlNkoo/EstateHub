@@ -1,41 +1,15 @@
 package com.rlnkoo.searchservice.security;
 
-import com.rlnkoo.commonsecurity.Claims;
 import com.rlnkoo.searchservice.domain.exception.AuthenticationRequiredException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 @Component
 public class CurrentUserProvider {
-
-    public Optional<CurrentUser> getCurrentUserOptional() {
-        return getCurrentJwtOptional()
-                .map(jwt -> {
-                    UUID userId = UUID.fromString(jwt.getSubject());
-                    String email = jwt.getClaimAsString(Claims.EMAIL);
-
-                    List<String> rolesClaim = jwt.getClaimAsStringList(Claims.ROLES);
-                    Set<String> roles = rolesClaim == null ? Set.of() : Set.copyOf(rolesClaim);
-
-                    return CurrentUser.builder()
-                            .userId(userId)
-                            .email(email)
-                            .roles(roles)
-                            .build();
-                });
-    }
-
-    public CurrentUser requireCurrentUser() {
-        return getCurrentUserOptional()
-                .orElseThrow(AuthenticationRequiredException::new);
-    }
 
     public Optional<Jwt> getCurrentJwtOptional() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

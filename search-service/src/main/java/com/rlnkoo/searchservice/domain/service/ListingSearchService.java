@@ -20,10 +20,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -215,7 +212,7 @@ public class ListingSearchService {
                 .collect(java.util.stream.Collectors.groupingBy(String::valueOf, java.util.stream.Collectors.counting()))
                 .entrySet().stream()
                 .sorted(
-                        Comparator.<java.util.Map.Entry<String, Long>, Integer>comparing(
+                        Comparator.<Map.Entry<String, Long>, Integer>comparing(
                                 entry -> Integer.parseInt(entry.getKey())
                         )
                 )
