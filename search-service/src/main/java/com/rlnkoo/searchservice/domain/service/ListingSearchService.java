@@ -5,6 +5,7 @@ import com.rlnkoo.searchservice.api.search.dto.SearchListingsRequest;
 import com.rlnkoo.searchservice.api.search.dto.SearchListingsResponse;
 import com.rlnkoo.searchservice.config.SearchProperties;
 import com.rlnkoo.searchservice.domain.exception.InvalidSearchRequestException;
+import com.rlnkoo.searchservice.domain.exception.SearchListingNotFoundException;
 import com.rlnkoo.searchservice.domain.model.SearchListingDocument;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -134,21 +135,21 @@ public class ListingSearchService {
                 .build();
     }
 
-    public SearchListingItemResponse getByIdOrNull(UUID listingId) {
+    public SearchListingItemResponse getById(UUID listingId) {
         SearchListingDocument document = elasticsearchOperations.get(
                 listingId.toString(),
                 SearchListingDocument.class
         );
 
         if (document == null) {
-            log.debug("Search listing not found listingId=[{}]", listingId);
-            return null;
+            log.warn("Search listing not found listingId=[{}]", listingId);
+            throw new SearchListingNotFoundException(listingId);
         }
 
         if (!STATUS_PUBLISHED.equalsIgnoreCase(document.getStatus())) {
-            log.debug("Search listing found but not published listingId=[{}] status=[{}]",
+            log.warn("Search listing found but not published listingId=[{}] status=[{}]",
                     listingId, document.getStatus());
-            return null;
+            throw new SearchListingNotFoundException(listingId);
         }
 
         return mapToItemResponse(document);

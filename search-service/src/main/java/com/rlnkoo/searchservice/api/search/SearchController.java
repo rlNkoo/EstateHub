@@ -10,12 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @RestController
@@ -61,11 +58,7 @@ public class SearchController {
     }
 
     @GetMapping("/listings/{listingId}")
-    public SearchListingItemResponse getListing(@PathVariable("listingId") UUID listingId) {
-        SearchListingItemResponse response = listingSearchService.getByIdOrNull(listingId);
-        if (response == null) {
-            throw new ResponseStatusException(NOT_FOUND, "Listing not found");
-        }
-        return response;
+    public SearchListingItemResponse getListing(@PathVariable UUID listingId) {
+        return listingSearchService.getById(listingId);
     }
 }

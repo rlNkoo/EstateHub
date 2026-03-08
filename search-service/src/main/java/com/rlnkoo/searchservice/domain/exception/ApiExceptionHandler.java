@@ -36,6 +36,15 @@ public class ApiExceptionHandler {
         return buildErrorResponse(HttpStatus.FORBIDDEN, "Access denied", request.getRequestURI());
     }
 
+    @ExceptionHandler(SearchListingNotFoundException.class)
+    public ErrorResponse handleSearchListingNotFound(
+            SearchListingNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Search listing not found path=[{}] message=[{}]", request.getRequestURI(), ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(InvalidBearerTokenException.class)
     public ErrorResponse handleInvalidBearerToken(
             InvalidBearerTokenException ex,
