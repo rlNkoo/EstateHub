@@ -308,7 +308,9 @@ public class ListingSearchService {
                 .id(document.getId())
                 .title(document.getTitle())
                 .description(document.getDescription())
-                .priceAmount(document.getPriceAmount())
+                .priceAmount(document.getPriceAmount() != null
+                        ? document.getPriceAmount().stripTrailingZeros().toPlainString()
+                        : null)
                 .currencyCode(document.getCurrencyCode())
                 .country(document.getCountry())
                 .city(document.getCity())

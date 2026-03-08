@@ -1,5 +1,7 @@
 package com.rlnkoo.searchservice.api.search.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.rlnkoo.searchservice.config.PlainBigDecimalSerializer;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -12,7 +14,7 @@ public record SearchListingItemResponse(
         UUID id,
         String title,
         String description,
-        BigDecimal priceAmount,
+        String priceAmount,
         String currencyCode,
         String country,
         String city,

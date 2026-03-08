@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
@@ -24,19 +25,19 @@ public class SearchController {
 
     @GetMapping("/listings")
     public SearchListingsResponse searchListings(
-            String q,
-            String city,
-            String country,
-            String propertyType,
-            BigDecimal priceFrom,
-            BigDecimal priceTo,
-            BigDecimal areaFrom,
-            BigDecimal areaTo,
-            Integer rooms,
-            Integer floor,
-            Integer page,
-            Integer size,
-            String sort
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "city", required = false) String city,
+            @RequestParam(name = "country", required = false) String country,
+            @RequestParam(name = "propertyType", required = false) String propertyType,
+            @RequestParam(name = "priceFrom", required = false) BigDecimal priceFrom,
+            @RequestParam(name = "priceTo", required = false) BigDecimal priceTo,
+            @RequestParam(name = "areaFrom", required = false) BigDecimal areaFrom,
+            @RequestParam(name = "areaTo", required = false) BigDecimal areaTo,
+            @RequestParam(name = "rooms", required = false) Integer rooms,
+            @RequestParam(name = "floor", required = false) Integer floor,
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "size", required = false) Integer size,
+            @RequestParam(name = "sort", required = false) String sort
     ) {
         SearchListingsRequest request = SearchListingsRequest.builder()
                 .q(q)
@@ -58,7 +59,7 @@ public class SearchController {
     }
 
     @GetMapping("/listings/{listingId}")
-    public SearchListingItemResponse getListing(@PathVariable UUID listingId) {
+    public SearchListingItemResponse getListing(@PathVariable("listingId") UUID listingId) {
         return listingSearchService.getById(listingId);
     }
 }
