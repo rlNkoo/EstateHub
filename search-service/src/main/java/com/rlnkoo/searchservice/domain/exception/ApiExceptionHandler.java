@@ -10,6 +10,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 
@@ -51,6 +52,21 @@ public class ApiExceptionHandler {
     ) {
         log.warn("Invalid search request path=[{}] message=[{}]", request.getRequestURI(), ex.getMessage());
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ErrorResponse handleResponseStatusException(
+            ResponseStatusException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Request failed path=[{}] status=[{}] message=[{}]",
+                request.getRequestURI(), ex.getStatusCode().value(), ex.getReason());
+
+        return buildErrorResponse(
+                HttpStatus.valueOf(ex.getStatusCode().value()),
+                ex.getReason() != null ? ex.getReason() : ex.getMessage(),
+                request.getRequestURI()
+        );
     }
 
     @ExceptionHandler(ReindexFailedException.class)
