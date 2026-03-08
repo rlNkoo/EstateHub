@@ -16,6 +16,28 @@ import java.util.UUID;
 public class CurrentUserProvider {
 
     public Optional<CurrentUser> getCurrentUserOptional() {
+        return getCurrentJwtOptional()
+                .map(jwt -> {
+                    UUID userId = UUID.fromString(jwt.getSubject());
+                    String email = jwt.getClaimAsString(Claims.EMAIL);
+
+                    List<String> rolesClaim = jwt.getClaimAsStringList(Claims.ROLES);
+                    Set<String> roles = rolesClaim == null ? Set.of() : Set.copyOf(rolesClaim);
+
+                    return CurrentUser.builder()
+                            .userId(userId)
+                            .email(email)
+                            .roles(roles)
+                            .build();
+                });
+    }
+
+    public CurrentUser requireCurrentUser() {
+        return getCurrentUserOptional()
+                .orElseThrow(AuthenticationRequiredException::new);
+    }
+
+    public Optional<Jwt> getCurrentJwtOptional() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             return Optional.empty();
@@ -26,23 +48,11 @@ public class CurrentUserProvider {
             return Optional.empty();
         }
 
-        UUID userId = UUID.fromString(jwt.getSubject());
-        String email = jwt.getClaimAsString(Claims.EMAIL);
-
-        List<String> rolesClaim = jwt.getClaimAsStringList(Claims.ROLES);
-        Set<String> roles = rolesClaim == null ? Set.of() : Set.copyOf(rolesClaim);
-
-        return Optional.of(
-                CurrentUser.builder()
-                        .userId(userId)
-                        .email(email)
-                        .roles(roles)
-                        .build()
-        );
+        return Optional.of(jwt);
     }
 
-    public CurrentUser requireCurrentUser() {
-        return getCurrentUserOptional()
+    public Jwt requireCurrentJwt() {
+        return getCurrentJwtOptional()
                 .orElseThrow(AuthenticationRequiredException::new);
     }
 }

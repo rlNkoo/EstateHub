@@ -47,6 +47,7 @@ public class ListingService {
                 .status(ListingStatus.DRAFT)
                 .currentVersion(1)
                 .publishedVersion(null)
+                .publishedAt(null)
                 .build();
 
         listingRepository.save(listing);
@@ -187,11 +188,12 @@ public class ListingService {
 
         ensurePublishable(listingId, current);
 
+        Instant now = Instant.now();
+
         listing.setStatus(ListingStatus.PUBLISHED);
         listing.setPublishedVersion(listing.getCurrentVersion());
+        listing.setPublishedAt(now);
         listingRepository.save(listing);
-
-        Instant now = Instant.now();
 
         eventsPublisher.publishListingPublished(
                 listingId,

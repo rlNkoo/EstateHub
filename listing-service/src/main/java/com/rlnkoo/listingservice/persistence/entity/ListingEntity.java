@@ -39,6 +39,9 @@ public class ListingEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "published_at")
+    private Instant publishedAt;
+
     @PrePersist
     void prePersist() {
         Instant now = Instant.now();

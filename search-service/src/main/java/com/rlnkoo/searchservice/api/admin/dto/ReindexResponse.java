@@ -6,8 +6,12 @@ import java.time.Instant;
 
 @Builder
 public record ReindexResponse(
-        boolean started,
+        boolean completed,
         String message,
+        int fetchedCount,
+        int indexedCount,
+        int failedCount,
+        int processedPages,
         Instant timestamp
 ) {
 }

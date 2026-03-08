@@ -37,6 +37,14 @@ public class ApiExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(InvalidAdminListingQueryException.class)
+    public ErrorResponse handleInvalidAdminListingQuery(
+            InvalidAdminListingQueryException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(ListingOwnershipException.class)
     public ErrorResponse handleListingOwnership(
             ListingOwnershipException ex,
