@@ -20,6 +20,7 @@
         <webp-imageio.version>0.2.2</webp-imageio.version>
         <common.security.version>0.0.1</common.security.version>
         <common.events.version>0.0.1</common.events.version>
+        <mockito.version>5.18.0</mockito.version>
     </properties>
 
     <modules>
@@ -72,6 +73,11 @@
                 <artifactId>common-security</artifactId>
                 <version>${common.security.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -96,6 +102,10 @@
                 <version>3.5.2</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                        -XX:+EnableDynamicAgentLoading
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
