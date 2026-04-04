@@ -13,6 +13,16 @@
 | Search Service | estatehub/search-service | 8084 |
 | Notification Service | estatehub/notification-service | 8085 |
 
+### Services in docker-compose.yml
+
+| Component     | Purpose | Default Port |
+|---------------|--------|--------------|
+| PostgreSQL    | Relational database (users, listings, etc.) | 5432 |
+| Kafka         | Event streaming / async communication | 9092 |
+| Elasticsearch | Search & indexing engine | 9200 |
+| Kibana        | Elasticsearch UI | 5601 |
+| Mailhog       | SMTP email testing | 8025 |
+| MinIO         | S3-compatible object storage (media files) | 9000 (API), 9001 (Console) |
 ---
 
 # UserService
