@@ -33,7 +33,6 @@ import static com.rlnkoo.userservice.domain.model.Role.USER;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.reset;
@@ -44,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class AuthControllerIT {
+class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
