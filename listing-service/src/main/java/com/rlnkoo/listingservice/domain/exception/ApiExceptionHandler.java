@@ -2,9 +2,11 @@ package com.rlnkoo.listingservice.domain.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,7 +16,7 @@ import java.time.Instant;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(InvalidCurrencyCodeException.class)
-    public ErrorResponse handleInvalidCurrencyCode(
+    public ResponseEntity<ErrorResponse> handleInvalidCurrencyCode(
             InvalidCurrencyCodeException ex,
             HttpServletRequest request
     ) {
@@ -22,7 +24,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ListingValidationException.class)
-    public ErrorResponse handleListingValidation(
+    public ResponseEntity<ErrorResponse> handleListingValidation(
             ListingValidationException ex,
             HttpServletRequest request
     ) {
@@ -30,7 +32,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ListingNotPublishableException.class)
-    public ErrorResponse handleListingNotPublishable(
+    public ResponseEntity<ErrorResponse> handleListingNotPublishable(
             ListingNotPublishableException ex,
             HttpServletRequest request
     ) {
@@ -38,7 +40,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(InvalidAdminListingQueryException.class)
-    public ErrorResponse handleInvalidAdminListingQuery(
+    public ResponseEntity<ErrorResponse> handleInvalidAdminListingQuery(
             InvalidAdminListingQueryException ex,
             HttpServletRequest request
     ) {
@@ -46,7 +48,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ListingOwnershipException.class)
-    public ErrorResponse handleListingOwnership(
+    public ResponseEntity<ErrorResponse> handleListingOwnership(
             ListingOwnershipException ex,
             HttpServletRequest request
     ) {
@@ -54,7 +56,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ListingNotEditableException.class)
-    public ErrorResponse handleListingNotEditable(
+    public ResponseEntity<ErrorResponse> handleListingNotEditable(
             ListingNotEditableException ex,
             HttpServletRequest request
     ) {
@@ -62,7 +64,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(InvalidPropertyTypeException.class)
-    public ErrorResponse handleInvalidPropertyType(
+    public ResponseEntity<ErrorResponse> handleInvalidPropertyType(
             InvalidPropertyTypeException ex,
             HttpServletRequest request
     ) {
@@ -70,7 +72,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(InvalidListingStatusTransitionException.class)
-    public ErrorResponse handleInvalidListingStatusTransition(
+    public ResponseEntity<ErrorResponse> handleInvalidListingStatusTransition(
             InvalidListingStatusTransitionException ex,
             HttpServletRequest request
     ) {
@@ -78,7 +80,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ListingNotFoundException.class)
-    public ErrorResponse handleListingNotFound(
+    public ResponseEntity<ErrorResponse> handleListingNotFound(
             ListingNotFoundException ex,
             HttpServletRequest request
     ) {
@@ -86,7 +88,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ListingContentNotFoundException.class)
-    public ErrorResponse handleListingContentNotFound(
+    public ResponseEntity<ErrorResponse> handleListingContentNotFound(
             ListingContentNotFoundException ex,
             HttpServletRequest request
     ) {
@@ -94,7 +96,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationRequiredException.class)
-    public ErrorResponse handleAuthenticationRequired(
+    public ResponseEntity<ErrorResponse> handleAuthenticationRequired(
             AuthenticationRequiredException ex,
             HttpServletRequest request
     ) {
@@ -102,7 +104,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({AuthorizationDeniedException.class, AccessDeniedException.class})
-    public ErrorResponse handleAccessDenied(
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
             Exception ex,
             HttpServletRequest request
     ) {
@@ -110,15 +112,24 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ErrorResponse handleAuthentication(
+    public ResponseEntity<ErrorResponse> handleAuthentication(
             AuthenticationException ex,
             HttpServletRequest request
     ) {
         return build(HttpStatus.UNAUTHORIZED, "Authentication required", request);
     }
 
+    // 🔥 KLUCZOWE – brakowało tego
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.BAD_REQUEST, "Validation failed", request);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
-    public ErrorResponse handleIllegalArgument(
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
             IllegalArgumentException ex,
             HttpServletRequest request
     ) {
@@ -126,7 +137,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ErrorResponse handleOtherExceptions(
+    public ResponseEntity<ErrorResponse> handleOtherExceptions(
             Exception ex,
             HttpServletRequest request
     ) {
@@ -138,13 +149,19 @@ public class ApiExceptionHandler {
         );
     }
 
-    private ErrorResponse build(HttpStatus status, String message, HttpServletRequest request) {
-        return new ErrorResponse(
+    private ResponseEntity<ErrorResponse> build(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request
+    ) {
+        ErrorResponse body = new ErrorResponse(
                 Instant.now(),
                 status.value(),
                 status.getReasonPhrase(),
                 message,
                 request.getRequestURI()
         );
+
+        return ResponseEntity.status(status).body(body);
     }
 }
