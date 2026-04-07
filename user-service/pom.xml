@@ -60,7 +60,6 @@
 			<groupId>com.rlnkoo</groupId>
 			<artifactId>common-events</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
