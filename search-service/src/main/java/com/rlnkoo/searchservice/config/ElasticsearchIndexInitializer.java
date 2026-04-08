@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,6 +16,12 @@ import org.springframework.data.elasticsearch.core.IndexOperations;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+        prefix = "app.search.index-initializer",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
 public class ElasticsearchIndexInitializer {
 
     private final ElasticsearchOperations elasticsearchOperations;
