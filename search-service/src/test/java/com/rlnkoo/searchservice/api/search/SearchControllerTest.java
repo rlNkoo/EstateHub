@@ -59,8 +59,8 @@ class SearchControllerTest {
                                 .description("Bright apartment in city center")
                                 .priceAmount("650000")
                                 .currencyCode("PLN")
-                                .country("Poland")
-                                .city("Warsaw")
+                                .country("England")
+                                .city("London")
                                 .street("Main Street")
                                 .postalCode("00-001")
                                 .area(new BigDecimal("72.50"))
@@ -78,7 +78,7 @@ class SearchControllerTest {
                 .sort("publishedAt,desc")
                 .facets(SearchFacetsResponse.builder()
                         .cities(List.of(
-                                SearchFacetBucketResponse.builder().value("Warsaw").count(1).build()
+                                SearchFacetBucketResponse.builder().value("London").count(1).build()
                         ))
                         .propertyTypes(List.of(
                                 SearchFacetBucketResponse.builder().value("APARTMENT").count(1).build()
@@ -100,8 +100,8 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.items[0].description").value("Bright apartment in city center"))
                 .andExpect(jsonPath("$.items[0].priceAmount").value("650000"))
                 .andExpect(jsonPath("$.items[0].currencyCode").value("PLN"))
-                .andExpect(jsonPath("$.items[0].country").value("Poland"))
-                .andExpect(jsonPath("$.items[0].city").value("Warsaw"))
+                .andExpect(jsonPath("$.items[0].country").value("England"))
+                .andExpect(jsonPath("$.items[0].city").value("London"))
                 .andExpect(jsonPath("$.items[0].street").value("Main Street"))
                 .andExpect(jsonPath("$.items[0].postalCode").value("00-001"))
                 .andExpect(jsonPath("$.items[0].area").value(72.50))
@@ -114,7 +114,7 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(20))
                 .andExpect(jsonPath("$.sort").value("publishedAt,desc"))
-                .andExpect(jsonPath("$.facets.cities[0].value").value("Warsaw"))
+                .andExpect(jsonPath("$.facets.cities[0].value").value("London"))
                 .andExpect(jsonPath("$.facets.cities[0].count").value(1))
                 .andExpect(jsonPath("$.facets.propertyTypes[0].value").value("APARTMENT"))
                 .andExpect(jsonPath("$.facets.propertyTypes[0].count").value(1))
@@ -146,8 +146,8 @@ class SearchControllerTest {
         // when
         mockMvc.perform(get("/search/listings")
                         .param("q", "apartment")
-                        .param("city", "Warsaw")
-                        .param("country", "Poland")
+                        .param("city", "London")
+                        .param("country", "England")
                         .param("propertyType", "APARTMENT")
                         .param("priceFrom", "100000")
                         .param("priceTo", "1000000")
@@ -166,8 +166,8 @@ class SearchControllerTest {
 
         SearchListingsRequest request = captor.getValue();
         assertEquals("apartment", request.q());
-        assertEquals("Warsaw", request.city());
-        assertEquals("Poland", request.country());
+        assertEquals("London", request.city());
+        assertEquals("England", request.country());
         assertEquals("APARTMENT", request.propertyType());
         assertEquals(new BigDecimal("100000"), request.priceFrom());
         assertEquals(new BigDecimal("1000000"), request.priceTo());
@@ -251,9 +251,9 @@ class SearchControllerTest {
                 .description("Great location")
                 .priceAmount("700000")
                 .currencyCode("PLN")
-                .country("Poland")
-                .city("Warsaw")
-                .street("Marszalkowska")
+                .country("England")
+                .city("London")
+                .street("King Street")
                 .postalCode("00-001")
                 .area(new BigDecimal("70.00"))
                 .rooms(3)
@@ -273,9 +273,9 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.description").value("Great location"))
                 .andExpect(jsonPath("$.priceAmount").value("700000"))
                 .andExpect(jsonPath("$.currencyCode").value("PLN"))
-                .andExpect(jsonPath("$.country").value("Poland"))
-                .andExpect(jsonPath("$.city").value("Warsaw"))
-                .andExpect(jsonPath("$.street").value("Marszalkowska"))
+                .andExpect(jsonPath("$.country").value("England"))
+                .andExpect(jsonPath("$.city").value("London"))
+                .andExpect(jsonPath("$.street").value("King Street"))
                 .andExpect(jsonPath("$.postalCode").value("00-001"))
                 .andExpect(jsonPath("$.area").value(70.00))
                 .andExpect(jsonPath("$.rooms").value(3))

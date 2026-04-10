@@ -130,7 +130,7 @@ class ListingSearchServiceTest {
                 .priceAmount(new BigDecimal("950000.50"))
                 .currencyCode("PLN")
                 .country("Poland")
-                .city("Krakow")
+                .city("London")
                 .street("Street B")
                 .postalCode("30-001")
                 .area(new BigDecimal("120.00"))
@@ -188,7 +188,7 @@ class ListingSearchServiceTest {
 
         assertEquals(
                 List.of(
-                        SearchFacetBucketResponse.builder().value("Krakow").count(1).build(),
+                        SearchFacetBucketResponse.builder().value("London").count(1).build(),
                         SearchFacetBucketResponse.builder().value("Warsaw").count(1).build()
                 ),
                 facets.cities()
@@ -302,7 +302,7 @@ class ListingSearchServiceTest {
 
         SearchListingDocument third = SearchListingDocument.builder()
                 .id(UUID.randomUUID())
-                .city("Krakow")
+                .city("London")
                 .propertyType("APARTMENT")
                 .rooms(10)
                 .build();
@@ -331,7 +331,7 @@ class ListingSearchServiceTest {
         assertEquals(
                 List.of(
                         SearchFacetBucketResponse.builder().value("Warsaw").count(2).build(),
-                        SearchFacetBucketResponse.builder().value("Krakow").count(1).build()
+                        SearchFacetBucketResponse.builder().value("London").count(1).build()
                 ),
                 response.facets().cities()
         );
@@ -538,7 +538,7 @@ class ListingSearchServiceTest {
                 .currencyCode("PLN")
                 .country("Poland")
                 .city("Warsaw")
-                .street("Marszalkowska")
+                .street("Market Street")
                 .postalCode("00-001")
                 .area(new BigDecimal("70.00"))
                 .rooms(3)

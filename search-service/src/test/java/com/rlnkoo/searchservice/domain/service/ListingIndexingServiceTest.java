@@ -49,7 +49,7 @@ class ListingIndexingServiceTest {
                 "Bright apartment in city center",
                 new BigDecimal("650000.00"),
                 "PLN",
-                new ListingEventAddressPayload("Poland", "Warsaw", "Main Street", "00-001"),
+                new ListingEventAddressPayload("England", "London", "Main Street", "00-001"),
                 new BigDecimal("72.50"),
                 3,
                 4,
@@ -74,8 +74,8 @@ class ListingIndexingServiceTest {
         assertEquals("Bright apartment in city center", document.getDescription());
         assertEquals(new BigDecimal("650000.00"), document.getPriceAmount());
         assertEquals("PLN", document.getCurrencyCode());
-        assertEquals("Poland", document.getCountry());
-        assertEquals("Warsaw", document.getCity());
+        assertEquals("England", document.getCountry());
+        assertEquals("London", document.getCity());
         assertEquals("Main Street", document.getStreet());
         assertEquals("00-001", document.getPostalCode());
         assertEquals(new BigDecimal("72.50"), document.getArea());
@@ -99,7 +99,7 @@ class ListingIndexingServiceTest {
                 "Draft description",
                 new BigDecimal("500000.00"),
                 "PLN",
-                new ListingEventAddressPayload("Poland", "Warsaw", "Main Street", "00-001"),
+                new ListingEventAddressPayload("England", "London", "Main Street", "00-001"),
                 new BigDecimal("60.00"),
                 2,
                 1,
@@ -162,7 +162,7 @@ class ListingIndexingServiceTest {
                 "Description",
                 new BigDecimal("400000.00"),
                 "PLN",
-                new ListingEventAddressPayload("Poland", "Warsaw", "Main Street", "00-001"),
+                new ListingEventAddressPayload("England", "London", "Main Street", "00-001"),
                 new BigDecimal("45.00"),
                 2,
                 1,
@@ -210,7 +210,7 @@ class ListingIndexingServiceTest {
                 "Updated description",
                 new BigDecimal("720000.00"),
                 "PLN",
-                new ListingEventAddressPayload("Poland", "Gdansk", "River Street", "80-001"),
+                new ListingEventAddressPayload("England", "Manchester", "River Street", "80-001"),
                 new BigDecimal("80.00"),
                 4,
                 6,
@@ -235,8 +235,8 @@ class ListingIndexingServiceTest {
         assertEquals("Updated description", document.getDescription());
         assertEquals(new BigDecimal("720000.00"), document.getPriceAmount());
         assertEquals("PLN", document.getCurrencyCode());
-        assertEquals("Poland", document.getCountry());
-        assertEquals("Gdansk", document.getCity());
+        assertEquals("England", document.getCountry());
+        assertEquals("Manchester", document.getCity());
         assertEquals("River Street", document.getStreet());
         assertEquals("80-001", document.getPostalCode());
         assertEquals(new BigDecimal("80.00"), document.getArea());
@@ -264,7 +264,7 @@ class ListingIndexingServiceTest {
                 "New description",
                 new BigDecimal("580000.00"),
                 "PLN",
-                new ListingEventAddressPayload("Poland", "Wroclaw", "Lake Street", "50-001"),
+                new ListingEventAddressPayload("England", "Bristol", "Lake Street", "50-001"),
                 new BigDecimal("63.00"),
                 3,
                 2,
@@ -298,7 +298,7 @@ class ListingIndexingServiceTest {
                 "Description",
                 new BigDecimal("300000.00"),
                 "PLN",
-                new ListingEventAddressPayload("Poland", "Warsaw", "Main Street", "00-001"),
+                new ListingEventAddressPayload("England", "London", "Main Street", "00-001"),
                 new BigDecimal("40.00"),
                 2,
                 0,
@@ -331,7 +331,7 @@ class ListingIndexingServiceTest {
                 "Updated description",
                 new BigDecimal("600000.00"),
                 "PLN",
-                new ListingEventAddressPayload("Poland", "Warsaw", "Main Street", "00-001"),
+                new ListingEventAddressPayload("England", "London", "Main Street", "00-001"),
                 new BigDecimal("55.00"),
                 3,
                 2,
