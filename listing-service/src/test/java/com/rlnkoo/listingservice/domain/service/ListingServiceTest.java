@@ -128,8 +128,8 @@ class ListingServiceTest {
         assertEquals(new BigDecimal("550000.00"), savedVersion.getPriceAmount());
         assertEquals("PLN", savedVersion.getCurrencyCode());
         assertNotNull(savedVersion.getAddress());
-        assertEquals("Poland", savedVersion.getAddress().getCountry());
-        assertEquals("Warsaw", savedVersion.getAddress().getCity());
+        assertEquals("England", savedVersion.getAddress().getCountry());
+        assertEquals("London", savedVersion.getAddress().getCity());
         assertEquals("Main Street 1", savedVersion.getAddress().getStreet());
         assertEquals("00-001", savedVersion.getAddress().getPostalCode());
         assertEquals(new BigDecimal("52.50"), savedVersion.getArea());
@@ -157,8 +157,8 @@ class ListingServiceTest {
                 .priceAmount(new BigDecimal("550000.00"))
                 .currencyCode("PLN")
                 .address(UpdateListingRequest.AddressRequest.builder()
-                        .country("Poland")
-                        .city("Warsaw")
+                        .country("England")
+                        .city("London")
                         .street("Main Street 1")
                         .postalCode("00-001")
                         .build())
@@ -227,8 +227,8 @@ class ListingServiceTest {
         assertEquals(new BigDecimal("550000.00"), payload.priceAmount());
         assertEquals("PLN", payload.currencyCode());
         assertNotNull(payload.address());
-        assertEquals("Poland", payload.address().country());
-        assertEquals("Warsaw", payload.address().city());
+        assertEquals("England", payload.address().country());
+        assertEquals("London", payload.address().city());
         assertEquals("Main Street 1", payload.address().street());
         assertEquals("00-001", payload.address().postalCode());
         assertEquals(new BigDecimal("52.50"), payload.area());
@@ -347,8 +347,8 @@ class ListingServiceTest {
                 .priceAmount(new BigDecimal("550000.00"))
                 .currencyCode("PLN")
                 .address(UpdateListingRequest.AddressRequest.builder()
-                        .country("Poland")
-                        .city("Warsaw")
+                        .country("England")
+                        .city("London")
                         .street("Main Street 1")
                         .postalCode("00-001")
                         .build())
@@ -388,8 +388,8 @@ class ListingServiceTest {
                 .priceAmount(new BigDecimal("550000.00"))
                 .currencyCode("PLN")
                 .address(UpdateListingRequest.AddressRequest.builder()
-                        .country("Poland")
-                        .city("Warsaw")
+                        .country("England")
+                        .city("London")
                         .street("Main Street 1")
                         .postalCode("00-001")
                         .build())
@@ -461,8 +461,8 @@ class ListingServiceTest {
         assertEquals(new BigDecimal("700000.00"), payload.priceAmount());
         assertEquals("PLN", payload.currencyCode());
         assertNotNull(payload.address());
-        assertEquals("Poland", payload.address().country());
-        assertEquals("Krakow", payload.address().city());
+        assertEquals("England", payload.address().country());
+        assertEquals("Manchester", payload.address().city());
         assertEquals("APARTMENT", payload.propertyType());
         assertEquals(List.of(PHOTO_ID_1, PHOTO_ID_2), payload.photoIds());
     }
@@ -719,8 +719,8 @@ class ListingServiceTest {
                 .priceAmount(new BigDecimal("550000.00"))
                 .currencyCode("PLN")
                 .address(UpdateListingRequest.AddressRequest.builder()
-                        .country("Poland")
-                        .city("Warsaw")
+                        .country("England")
+                        .city("London")
                         .street("Main Street 1")
                         .postalCode("00-001")
                         .build())
@@ -742,8 +742,8 @@ class ListingServiceTest {
                 .priceAmount(new BigDecimal("700000.00"))
                 .currencyCode("PLN")
                 .address(ListingVersionEntity.AddressEmbeddable.builder()
-                        .country("Poland")
-                        .city("Krakow")
+                        .country("England")
+                        .city("Manchester")
                         .street("Sunny Street 15")
                         .postalCode("30-001")
                         .build())

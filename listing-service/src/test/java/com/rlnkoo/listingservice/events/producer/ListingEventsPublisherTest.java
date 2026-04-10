@@ -49,8 +49,8 @@ class ListingEventsPublisherTest {
                 .priceAmount(new BigDecimal("799000.00"))
                 .currencyCode("PLN")
                 .address(ListingUpdatedPayload.AddressPayload.builder()
-                        .country("Poland")
-                        .city("Warsaw")
+                        .country("England")
+                        .city("London")
                         .street("Main Street 12")
                         .postalCode("00-100")
                         .build())
@@ -92,8 +92,8 @@ class ListingEventsPublisherTest {
         assertEquals(new BigDecimal("799000.00"), capturedPayload.priceAmount());
         assertEquals("PLN", capturedPayload.currencyCode());
         assertNotNull(capturedPayload.address());
-        assertEquals("Poland", capturedPayload.address().country());
-        assertEquals("Warsaw", capturedPayload.address().city());
+        assertEquals("England", capturedPayload.address().country());
+        assertEquals("London", capturedPayload.address().city());
         assertEquals("Main Street 12", capturedPayload.address().street());
         assertEquals("00-100", capturedPayload.address().postalCode());
         assertEquals(new BigDecimal("72.50"), capturedPayload.area());
@@ -120,8 +120,8 @@ class ListingEventsPublisherTest {
                 .priceAmount(new BigDecimal("1250000.00"))
                 .currencyCode("PLN")
                 .address(ListingUpdatedPayload.AddressPayload.builder()
-                        .country("Poland")
-                        .city("Krakow")
+                        .country("England")
+                        .city("Manchester")
                         .street("Garden Street 7")
                         .postalCode("30-200")
                         .build())
@@ -164,8 +164,8 @@ class ListingEventsPublisherTest {
         assertEquals(new BigDecimal("1250000.00"), capturedPayload.priceAmount());
         assertEquals("PLN", capturedPayload.currencyCode());
         assertNotNull(capturedPayload.address());
-        assertEquals("Poland", capturedPayload.address().country());
-        assertEquals("Krakow", capturedPayload.address().city());
+        assertEquals("England", capturedPayload.address().country());
+        assertEquals("Manchester", capturedPayload.address().city());
         assertEquals("Garden Street 7", capturedPayload.address().street());
         assertEquals("30-200", capturedPayload.address().postalCode());
         assertEquals(new BigDecimal("145.00"), capturedPayload.area());
