@@ -55,8 +55,8 @@ class MeControllerTest {
                 .passwordHash("encoded-password")
                 .enabled(true)
                 .roles(Set.of(Role.USER, Role.ADMIN))
-                .firstName("Jan")
-                .lastName("Kowalski")
+                .firstName("John")
+                .lastName("Smith")
                 .phoneNumber("123456789")
                 .build();
 
@@ -71,8 +71,8 @@ class MeControllerTest {
                 .andExpect(jsonPath("$.email").value("me@example.com"))
                 .andExpect(jsonPath("$.roles", containsInAnyOrder("USER", "ADMIN")))
                 .andExpect(jsonPath("$.activated").value(true))
-                .andExpect(jsonPath("$.firstName").value("Jan"))
-                .andExpect(jsonPath("$.lastName").value("Kowalski"))
+                .andExpect(jsonPath("$.firstName").value("John"))
+                .andExpect(jsonPath("$.lastName").value("Smith"))
                 .andExpect(jsonPath("$.phoneNumber").value("123456789"));
     }
 
@@ -95,7 +95,7 @@ class MeControllerTest {
         String requestBody = """
                 {
                   "firstName": "Anna",
-                  "lastName": "Nowak",
+                  "lastName": "Johnson",
                   "phoneNumber": "987654321"
                 }
                 """;
@@ -111,12 +111,12 @@ class MeControllerTest {
                 .andExpect(jsonPath("$.roles", containsInAnyOrder("USER")))
                 .andExpect(jsonPath("$.activated").value(true))
                 .andExpect(jsonPath("$.firstName").value("Anna"))
-                .andExpect(jsonPath("$.lastName").value("Nowak"))
+                .andExpect(jsonPath("$.lastName").value("Johnson"))
                 .andExpect(jsonPath("$.phoneNumber").value("987654321"));
 
         UserEntity updatedUser = userRepository.findById(savedUser.getId()).orElseThrow();
         org.junit.jupiter.api.Assertions.assertEquals("Anna", updatedUser.getFirstName());
-        org.junit.jupiter.api.Assertions.assertEquals("Nowak", updatedUser.getLastName());
+        org.junit.jupiter.api.Assertions.assertEquals("Johnson", updatedUser.getLastName());
         org.junit.jupiter.api.Assertions.assertEquals("987654321", updatedUser.getPhoneNumber());
     }
 
@@ -138,7 +138,7 @@ class MeControllerTest {
         String requestBody = """
         {
           "firstName": "%s",
-          "lastName": "Nowak",
+          "lastName": "Johnson",
           "phoneNumber": "987654321"
         }
         """.formatted(tooLongFirstName);
@@ -161,7 +161,7 @@ class MeControllerTest {
         String requestBody = """
                 {
                   "firstName": "Anna",
-                  "lastName": "Nowak",
+                  "lastName": "Johnson",
                   "phoneNumber": "987654321"
                 }
                 """;

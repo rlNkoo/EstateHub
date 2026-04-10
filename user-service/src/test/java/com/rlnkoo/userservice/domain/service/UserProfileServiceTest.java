@@ -50,8 +50,8 @@ class UserProfileServiceTest {
                 .passwordHash("encoded-password")
                 .enabled(true)
                 .roles(Set.of(Role.USER, Role.ADMIN))
-                .firstName("Jan")
-                .lastName("Kowalski")
+                .firstName("John")
+                .lastName("Smith")
                 .phoneNumber("123456789")
                 .build();
 
@@ -67,8 +67,8 @@ class UserProfileServiceTest {
         assertEquals("test@example.com", response.email());
         assertEquals(Set.of("USER", "ADMIN"), response.roles());
         assertTrue(response.activated());
-        assertEquals("Jan", response.firstName());
-        assertEquals("Kowalski", response.lastName());
+        assertEquals("John", response.firstName());
+        assertEquals("Smith", response.lastName());
         assertEquals("123456789", response.phoneNumber());
 
         verify(currentUserProvider).getCurrentUser();
@@ -114,7 +114,7 @@ class UserProfileServiceTest {
 
         UpdateMeRequest request = new UpdateMeRequest();
         request.setFirstName("Anna");
-        request.setLastName("Nowak");
+        request.setLastName("Johnson");
         request.setPhoneNumber("987654321");
 
         UserEntity user = UserEntity.builder()
@@ -141,11 +141,11 @@ class UserProfileServiceTest {
         assertEquals(Set.of("USER"), response.roles());
         assertTrue(response.activated());
         assertEquals("Anna", response.firstName());
-        assertEquals("Nowak", response.lastName());
+        assertEquals("Johnson", response.lastName());
         assertEquals("987654321", response.phoneNumber());
 
         assertEquals("Anna", user.getFirstName());
-        assertEquals("Nowak", user.getLastName());
+        assertEquals("Johnson", user.getLastName());
         assertEquals("987654321", user.getPhoneNumber());
 
         ArgumentCaptor<UserEntity> userCaptor = ArgumentCaptor.forClass(UserEntity.class);
@@ -169,7 +169,7 @@ class UserProfileServiceTest {
 
         UpdateMeRequest request = new UpdateMeRequest();
         request.setFirstName("Anna");
-        request.setLastName("Nowak");
+        request.setLastName("Johnson");
         request.setPhoneNumber("987654321");
 
         when(currentUserProvider.getCurrentUser()).thenReturn(currentUser);
