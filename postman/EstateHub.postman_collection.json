@@ -1,0 +1,1189 @@
+{
+  "info": {
+    "_postman_id": "5d604eb6-ecb2-442d-a60f-78aeece2fd22",
+    "name": "EstateHub",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "33345657"
+  },
+  "item": [
+    {
+      "name": "User-Service",
+      "item": [
+        {
+          "name": "AuthController",
+          "item": [
+            {
+              "name": "register",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"user@test1.pl\",\r\n  \"password\": \"Password123!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/auth/register",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "confirm-registration",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"token\": \"cSXDC_D0nzZCadmjqhhfP91OWpZ46wJdn8pRntlBnak\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/auth/confirm-registration",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "auth",
+                    "confirm-registration"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "login",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"user@test3.pl\",\r\n  \"password\": \"NewPassword123!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/auth/login",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "password-reset/request",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiMzhkNTE4OTQtM2RmZS00YmZjLWIzY2QtNjEwMDgyNzljODQ1IiwiZXhwIjoxNzY3NjI3MjgxLCJpYXQiOjE3Njc2MjM2ODEsImVtYWlsIjoidXNlckB0ZXN0LnBsIiwicm9sZXMiOlsiVVNFUiJdfQ.i5VrO7HW0ywF8rUOup4hLZ-C0rHSKW87tPYrTW135sE",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"user@test.pl\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/auth/password-reset/request",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "auth",
+                    "password-reset",
+                    "request"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "password-reset/confirm",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"token\": \"xbB-U5CUojUxANMmiqlEU8u8cjLLTJpMLGJ-8MxdJ5o\",\r\n  \"newPassword\": \"NewPassword123!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/auth/password-reset/confirm",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "auth",
+                    "password-reset",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "MeController",
+          "item": [
+            {
+              "name": "me",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "me",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"firstName\": \"Jan\",\r\n  \"lastName\": \"Kowalski\",\r\n  \"phoneNumber\": \"+48 123 456 789\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AdminController",
+          "item": [
+            {
+              "name": "changeRoles",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNjRkMGRkODUtNWVjZS00MDE2LWFkNTQtNWJmMjk5OWQ0Zjc1IiwiZXhwIjoxNzc1OTE1MDA2LCJpYXQiOjE3NzU5MTE0MDYsImVtYWlsIjoidXNlckB0ZXN0MS5wbCIsInJvbGVzIjpbIkFETUlOIiwiVVNFUiJdfQ.kbwvKi0fwd8PJCUPDX-zKSqD2b6NSJ9Pnv9f68A0rtU",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"roles\": [\"USER\", \"ADMIN\"]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/admin/users/4bffe006-3691-48f2-a726-9ce681b18e3e/roles",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "admin",
+                    "users",
+                    "4bffe006-3691-48f2-a726-9ce681b18e3e",
+                    "roles"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Listing-Service",
+      "item": [
+        {
+          "name": "ListingController",
+          "item": [
+            {
+              "name": "createDraft",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/listings",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "listings"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "publishListing",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiMGI4YjNjYTctOWQ3MS00YzNjLTg2YzctZDkyNDk0MGU2N2I5IiwiZXhwIjoxNzY4ODMyNzE5LCJpYXQiOjE3Njg4MjkxMTksImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.GLfAab72Qc7yQMlHrl-rwwVNOfJP0qmoD3LHn5R8pJM",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/listings/af3a20a0-b644-4563-bdfe-28cea9a7cbd6/publish",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "listings",
+                    "af3a20a0-b644-4563-bdfe-28cea9a7cbd6",
+                    "publish"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "archiveListing",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/listings/077cd753-593e-406d-84d0-7221c1afd5fe/archive",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "listings",
+                    "077cd753-593e-406d-84d0-7221c1afd5fe",
+                    "archive"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "updateListing",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"title\": \"Mieszkanie 2 pokoje w centrum\",\r\n  \"description\": \"Jasne mieszkanie po remoncie, blisko metra.\",\r\n  \"priceAmount\": 850000,\r\n  \"currencyCode\": \"PLN\",\r\n  \"address\": {\r\n    \"country\": \"PL\",\r\n    \"city\": \"Warszawa\",\r\n    \"street\": \"Marszałkowska 101\",\r\n    \"postalCode\": \"00-001\"\r\n  },\r\n  \"area\": 48.5,\r\n  \"rooms\": 3,\r\n  \"floor\": 3,\r\n  \"propertyType\": \"APARTMENT\",\r\n  \"photoIds\": []\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/listings/c86392b7-af05-4494-85df-5bcbe17fa61f",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "listings",
+                    "c86392b7-af05-4494-85df-5bcbe17fa61f"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getListing",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/listings/c86392b7-af05-4494-85df-5bcbe17fa61f",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "listings",
+                    "c86392b7-af05-4494-85df-5bcbe17fa61f"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getMyListings",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/listings/mine",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "listings",
+                    "mine"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "AdminController",
+          "item": [
+            {
+              "name": "getPublishedListingsForReindex Copy",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNjRkMGRkODUtNWVjZS00MDE2LWFkNTQtNWJmMjk5OWQ0Zjc1IiwiZXhwIjoxNzc1OTE1MDA2LCJpYXQiOjE3NzU5MTE0MDYsImVtYWlsIjoidXNlckB0ZXN0MS5wbCIsInJvbGVzIjpbIkFETUlOIiwiVVNFUiJdfQ.kbwvKi0fwd8PJCUPDX-zKSqD2b6NSJ9Pnv9f68A0rtU",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/admin/listings/published?page=0&size=100",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "admin",
+                    "listings",
+                    "published"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Media-Service",
+      "item": [
+        {
+          "name": "MediaController",
+          "item": [
+            {
+              "name": "ListPhotos",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "uuid": "6cb5c847-89a5-41e3-9d7e-3ef62d26e235",
+                      "src": "/C:/Users/Administrator/Desktop/Sprzedanie mieszkania/Zdjęcia mieszkanie/1.jpg",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8080/media/listings/c86392b7-af05-4494-85df-5bcbe17fa61f/photos",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "media",
+                    "listings",
+                    "c86392b7-af05-4494-85df-5bcbe17fa61f",
+                    "photos"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GetPhoto",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "uuid": "6cb5c847-89a5-41e3-9d7e-3ef62d26e235",
+                      "src": "/C:/Users/Administrator/Desktop/Sprzedanie mieszkania/Zdjęcia mieszkanie/1.jpg",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8080/media/photos/e7f28b2e-eab1-498c-9490-9ae93bcbab46",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "media",
+                    "photos",
+                    "e7f28b2e-eab1-498c-9490-9ae93bcbab46"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "DeletePhoto",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "uuid": "6cb5c847-89a5-41e3-9d7e-3ef62d26e235",
+                      "src": "/C:/Users/Administrator/Desktop/Sprzedanie mieszkania/Zdjęcia mieszkanie/1.jpg",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8080/media/photos/e7f28b2e-eab1-498c-9490-9ae93bcbab46",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "media",
+                    "photos",
+                    "e7f28b2e-eab1-498c-9490-9ae93bcbab46"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UploadPhoto",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "uuid": "6cb5c847-89a5-41e3-9d7e-3ef62d26e235",
+                      "src": "/C:/Users/Administrator/Desktop/Sprzedanie mieszkania/Zdjęcia mieszkanie/1.jpg"
+                    },
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "uuid": "59dce476-2d63-41e6-a533-a3c720eb17fc",
+                      "src": "/C:/Users/Administrator/Desktop/Sprzedanie mieszkania/Zdjęcia mieszkanie/2.jpg",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8080/media/listings/c86392b7-af05-4494-85df-5bcbe17fa61f/photos",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "media",
+                    "listings",
+                    "c86392b7-af05-4494-85df-5bcbe17fa61f",
+                    "photos"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search-Service",
+      "item": [
+        {
+          "name": "AdminController",
+          "item": [
+            {
+              "name": "getIndexInfo",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNjRkMGRkODUtNWVjZS00MDE2LWFkNTQtNWJmMjk5OWQ0Zjc1IiwiZXhwIjoxNzc1OTE1MDA2LCJpYXQiOjE3NzU5MTE0MDYsImVtYWlsIjoidXNlckB0ZXN0MS5wbCIsInJvbGVzIjpbIkFETUlOIiwiVVNFUiJdfQ.kbwvKi0fwd8PJCUPDX-zKSqD2b6NSJ9Pnv9f68A0rtU",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/admin/index-info",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "admin",
+                    "index-info"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getPublishedListingsForReindex",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNjRkMGRkODUtNWVjZS00MDE2LWFkNTQtNWJmMjk5OWQ0Zjc1IiwiZXhwIjoxNzc1OTE1MDA2LCJpYXQiOjE3NzU5MTE0MDYsImVtYWlsIjoidXNlckB0ZXN0MS5wbCIsInJvbGVzIjpbIkFETUlOIiwiVVNFUiJdfQ.kbwvKi0fwd8PJCUPDX-zKSqD2b6NSJ9Pnv9f68A0rtU",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/admin/listings/published?page=0&size=100",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "admin",
+                    "listings",
+                    "published"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "reindexAllPublishedListings",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNjRkMGRkODUtNWVjZS00MDE2LWFkNTQtNWJmMjk5OWQ0Zjc1IiwiZXhwIjoxNzc1OTE1MDA2LCJpYXQiOjE3NzU5MTE0MDYsImVtYWlsIjoidXNlckB0ZXN0MS5wbCIsInJvbGVzIjpbIkFETUlOIiwiVVNFUiJdfQ.kbwvKi0fwd8PJCUPDX-zKSqD2b6NSJ9Pnv9f68A0rtU",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/admin/reindex",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "admin",
+                    "reindex"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "SearchController",
+          "item": [
+            {
+              "name": "searchListings",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "searchListingsByCity",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings?city=Warszawa",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "city",
+                      "value": "Warszawa"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "searchListingsByPropertyType",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings?propertyType=APARTMENT",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "searchListingsByPrice",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings?priceFrom=800000&priceTo=900000",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "priceFrom",
+                      "value": "800000"
+                    },
+                    {
+                      "key": "priceTo",
+                      "value": "900000"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "searchListingsByRooms",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings?rooms=3",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "rooms",
+                      "value": "3"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "searchListingsByFull-text",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings?q=blisko metra",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "blisko metra"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "searchListingsByPriceAndSort",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlc3RhdGVodWItdXNlci1zZXJ2aWNlIiwic3ViIjoiNGJmZmUwMDYtMzY5MS00OGYyLWE3MjYtOWNlNjgxYjE4ZTNlIiwiZXhwIjoxNzc1OTE0MDk0LCJpYXQiOjE3NzU5MTA0OTQsImVtYWlsIjoidXNlckB0ZXN0My5wbCIsInJvbGVzIjpbIlVTRVIiXX0.hJV0R0hf8irijZzYLHnsop7N_-fCcVLYPawxE5QjG0E",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings?sort=priceAmount,desc",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "sort",
+                      "value": "priceAmount,desc"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getListing",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/search/listings/3642b608-b5ad-43eb-b39b-d8dff6a82db7",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "search",
+                    "listings",
+                    "3642b608-b5ad-43eb-b39b-d8dff6a82db7"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gateway-Service",
+      "item": [
+        {
+          "name": "Actuator",
+          "item": [
+            {
+              "name": "getActuator",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/actuator/health",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getRoutes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8080/actuator/gateway/routes",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "actuator",
+                    "gateway",
+                    "routes"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
