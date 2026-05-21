@@ -7,12 +7,12 @@ RUN apt-get update \
 
 COPY . .
 
-RUN mvn -q -DskipTests -pl media-service -am package
+RUN mvn -q -pl media-service -am package
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app
 
-COPY --from=build /workspace/media-service/target/*.jar app.jar
+COPY --from=build /workspace/media-service/target/media-service-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8083
 ENTRYPOINT ["java","-jar","/app/app.jar"]

@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:16
-    container_name: estatehub-postgres
     environment:
       POSTGRES_USER: estatehub
       POSTGRES_PASSWORD: estatehub
@@ -18,30 +17,29 @@ services:
 
   kafka:
     image: apache/kafka:4.1.1
-    container_name: estatehub-kafka
-    ports:
-      - "9092:9092"
     environment:
       CLUSTER_ID: "5L6g3nShT-eMCtK--X86sw"
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: "broker,controller"
-      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@estatehub-kafka:9093"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
 
-      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://localhost:9094"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
       KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
 
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    ports:
+      - "9094:9094"
     volumes:
       - kafka_data:/var/lib/kafka/data
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.2.2
-    container_name: estatehub-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -51,24 +49,22 @@ services:
     volumes:
       - es_data:/usr/share/elasticsearch/data
     healthcheck:
-      test: [ "CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1" ]
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 20
 
   kibana:
     image: docker.elastic.co/kibana/kibana:9.2.2
-    container_name: estatehub-kibana
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
     ports:
       - "5601:5601"
 
   minio:
     image: minio/minio:RELEASE.2024-10-13T13-34-11Z
-    container_name: estatehub-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -81,10 +77,110 @@ services:
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
-    container_name: estatehub-mailhog
     ports:
       - "1025:1025"
       - "8025:8025"
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      APP_SERVICES_USER: http://user-service:8081
+      APP_SERVICES_LISTING: http://listing-service:8082
+      APP_SERVICES_MEDIA: http://media-service:8083
+      APP_SERVICES_SEARCH: http://search-service:8084
+    depends_on:
+      - user-service
+      - listing-service
+      - media-service
+      - search-service
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/estatehub
+      SPRING_DATASOURCE_USERNAME: estatehub
+      SPRING_DATASOURCE_PASSWORD: estatehub
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    expose:
+      - "8081"
+    depends_on:
+      - postgres
+      - kafka
+
+  listing-service:
+    build:
+      context: .
+      dockerfile: listing-service/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/estatehub
+      SPRING_DATASOURCE_USERNAME: estatehub
+      SPRING_DATASOURCE_PASSWORD: estatehub
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    expose:
+      - "8082"
+    depends_on:
+      - postgres
+      - kafka
+
+  media-service:
+    build:
+      context: .
+      dockerfile: media-service/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/estatehub
+      SPRING_DATASOURCE_USERNAME: estatehub
+      SPRING_DATASOURCE_PASSWORD: estatehub
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      S3_ENDPOINT: http://minio:9000
+      APP_SERVICES_LISTING: http://listing-service:8082
+    expose:
+      - "8083"
+    depends_on:
+      - postgres
+      - kafka
+      - minio
+
+  search-service:
+    build:
+      context: .
+      dockerfile: search-service/Dockerfile
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      LISTING_SERVICE_BASE_URL: http://listing-service:8082
+    expose:
+      - "8084"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      listing-service:
+        condition: service_started
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/estatehub
+      SPRING_DATASOURCE_USERNAME: estatehub
+      SPRING_DATASOURCE_PASSWORD: estatehub
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+    expose:
+      - "8085"
+    depends_on:
+      - postgres
+      - kafka
+      - mailhog
 
 volumes:
   postgres_data:
