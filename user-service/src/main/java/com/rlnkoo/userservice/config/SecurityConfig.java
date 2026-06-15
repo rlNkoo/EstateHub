@@ -30,6 +30,7 @@ public class SecurityConfig {
                                 "/auth/password-reset/request",
                                 "/auth/password-reset/confirm"
                         ).permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .anyRequest().authenticated()
                 )

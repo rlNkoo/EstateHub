@@ -29,7 +29,8 @@ public class SecurityConfig {
                                 "/auth/confirm-registration",
                                 "/auth/login",
                                 "/auth/password-reset/request",
-                                "/auth/password-reset/confirm"
+                                "/auth/password-reset/confirm",
+                                "/auth/test/activate"
                         ).permitAll()
                         .pathMatchers("/auth/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/listings/**").permitAll()

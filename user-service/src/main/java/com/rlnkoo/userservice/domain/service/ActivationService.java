@@ -78,4 +78,28 @@ public class ActivationService {
         userEventsPublisher.publish(user.getId(), event);
         log.debug("Published event UserActivatedV1 userId=[{}] eventId=[{}]", user.getId(), event.eventId());
     }
+
+    @Transactional
+    public void activateForTests(String email) {
+        UserEntity user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+
+        if (user.isEnabled()) {
+            return;
+        }
+
+        user.activate();
+        userRepository.save(user);
+
+        UserActivatedPayload payload = UserActivatedPayload.builder()
+                .userId(user.getId())
+                .email(user.getEmail())
+                .activatedAt(user.getConfirmedAt())
+                .build();
+
+        EventEnvelope<UserActivatedPayload> event =
+                EventEnvelope.of("UserActivatedV1", payload);
+
+        userEventsPublisher.publish(user.getId(), event);
+    }
 }
