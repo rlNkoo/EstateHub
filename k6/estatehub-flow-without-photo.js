@@ -5,7 +5,8 @@ import { Trend, Rate } from 'k6/metrics';
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 const PASSWORD = 'Test123!';
 
-const photo = open('./1.jpg', 'b');
+// Zdjęcia wyłączone w tym wariancie testu.
+// const photo = open('./1.jpg', 'b');
 
 const registerDuration = new Trend('step_01_register_duration');
 const activateDuration = new Trend('step_02_activate_duration');
@@ -13,10 +14,10 @@ const loginDuration = new Trend('step_03_login_duration');
 const createListingDuration = new Trend('step_04_create_listing_duration');
 const updateListingDuration = new Trend('step_05_update_listing_duration');
 const publishListingDuration = new Trend('step_06_publish_listing_duration');
-const uploadPhotoDuration = new Trend('step_07_upload_photo_duration');
-const deletePhotoDuration = new Trend('step_08_delete_photo_duration');
-const searchDuration = new Trend('step_09_search_duration');
-const archiveListingDuration = new Trend('step_10_archive_listing_duration');
+// const uploadPhotoDuration = new Trend('step_07_upload_photo_duration');
+// const deletePhotoDuration = new Trend('step_08_delete_photo_duration');
+const searchDuration = new Trend('step_07_search_duration');
+const archiveListingDuration = new Trend('step_08_archive_listing_duration');
 
 const flowFailed = new Rate('flow_failed');
 
@@ -51,14 +52,6 @@ function jsonHeaders(token = null) {
     }
 
     return { headers };
-}
-
-function authHeaders(token) {
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    };
 }
 
 function addDuration(metric, response) {
@@ -234,82 +227,86 @@ export default function () {
         return;
     }
 
-    // Krótka pauza techniczna na propagację eventu:
+    // Pauza na propagację eventu:
     // ListingService -> Kafka -> SearchService -> Elasticsearch
     sleep(1);
+
+    /*
+    =====================================================
+    OPERACJE ZDJĘĆ WYŁĄCZONE W TYM WARIANCIE TESTU
+
+    REQUEST 7: Upload zdjęcia do ogłoszenia
+    POST /media/listings/{listingId}/photos
+
+    REQUEST 8: Usunięcie zdjęcia
+    DELETE /media/photos/{mediaId}
+    =====================================================
 
     const uploadData = {
         file: http.file(photo, '1.jpg', 'image/jpeg'),
     };
 
-    const shouldUploadPhoto = Math.random() < 0.2;
-
-    if (shouldUploadPhoto) {
-        const uploadData = {
-            file: http.file(photo, '1.jpg', 'image/jpeg'),
-        };
-
-        // REQUEST 7: Upload zdjęcia do ogłoszenia
-        // POST /media/listings/{listingId}/photos
-        const uploadRes = http.post(
-            `${BASE_URL}/media/listings/${listingId}/photos`,
-            uploadData,
-            {
-                ...authHeaders(accessToken),
-                tags: { endpoint: '07_upload_photo' },
-            }
-        );
-
-        addDuration(uploadPhotoDuration, uploadRes);
-
-        const uploadOk = check(uploadRes, {
-            '07 upload photo status 201': (r) => r.status === 201,
-            '07 upload photo has mediaId': (r) => !!r.json('mediaId'),
-        });
-
-        if (!uploadOk) {
-            flowFailed.add(1);
-            return;
+    const uploadRes = http.post(
+        `${BASE_URL}/media/listings/${listingId}/photos`,
+        uploadData,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            tags: { endpoint: '07_upload_photo' },
         }
+    );
 
-        const mediaId = uploadRes.json('mediaId');
+    addDuration(uploadPhotoDuration, uploadRes);
 
-        // REQUEST 8: Usunięcie zdjęcia
-        // DELETE /media/photos/{mediaId}
-        const deletePhotoRes = http.del(
-            `${BASE_URL}/media/photos/${mediaId}`,
-            null,
-            {
-                ...authHeaders(accessToken),
-                tags: { endpoint: '08_delete_photo' },
-            }
-        );
+    const uploadOk = check(uploadRes, {
+        '07 upload photo status 201': (r) => r.status === 201,
+        '07 upload photo has mediaId': (r) => !!r.json('mediaId'),
+    });
 
-        addDuration(deletePhotoDuration, deletePhotoRes);
-
-        const deletePhotoOk = check(deletePhotoRes, {
-            '08 delete photo status 204': (r) => r.status === 204,
-        });
-
-        if (!deletePhotoOk) {
-            flowFailed.add(1);
-            return;
-        }
+    if (!uploadOk) {
+        flowFailed.add(1);
+        return;
     }
 
-    // REQUEST 9: Wyszukiwanie opublikowanych ogłoszeń
+    const mediaId = uploadRes.json('mediaId');
+
+    const deletePhotoRes = http.del(
+        `${BASE_URL}/media/photos/${mediaId}`,
+        null,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            tags: { endpoint: '08_delete_photo' },
+        }
+    );
+
+    addDuration(deletePhotoDuration, deletePhotoRes);
+
+    const deletePhotoOk = check(deletePhotoRes, {
+        '08 delete photo status 204': (r) => r.status === 204,
+    });
+
+    if (!deletePhotoOk) {
+        flowFailed.add(1);
+        return;
+    }
+    */
+
+    // REQUEST 7: Wyszukiwanie opublikowanych ogłoszeń
     // GET /search/listings
     const searchRes = http.get(
         `${BASE_URL}/search/listings?city=Warszawa&propertyType=APARTMENT&page=0&size=10`,
         {
-            tags: { endpoint: '09_search_listings' },
+            tags: { endpoint: '07_search_listings' },
         }
     );
 
     addDuration(searchDuration, searchRes);
 
     const searchOk = check(searchRes, {
-        '09 search status 200': (r) => r.status === 200,
+        '07 search status 200': (r) => r.status === 200,
     });
 
     if (!searchOk) {
@@ -317,22 +314,22 @@ export default function () {
         return;
     }
 
-    // REQUEST 10: Archiwizacja ogłoszenia
+    // REQUEST 8: Archiwizacja ogłoszenia
     // POST /listings/{listingId}/archive
     const archiveRes = http.post(
         `${BASE_URL}/listings/${listingId}/archive`,
         null,
         {
             ...jsonHeaders(accessToken),
-            tags: { endpoint: '10_archive_listing' },
+            tags: { endpoint: '08_archive_listing' },
         }
     );
 
     addDuration(archiveListingDuration, archiveRes);
 
     const archiveOk = check(archiveRes, {
-        '10 archive listing status 200': (r) => r.status === 200,
-        '10 archive listing status ARCHIVED': (r) => r.json('status') === 'ARCHIVED',
+        '08 archive listing status 200': (r) => r.status === 200,
+        '08 archive listing status ARCHIVED': (r) => r.json('status') === 'ARCHIVED',
     });
 
     if (!archiveOk) {
