@@ -21,6 +21,8 @@ const archiveListingDuration = new Trend('step_10_archive_listing_duration');
 const flowFailed = new Rate('flow_failed');
 
 export const options = {
+    summaryTrendStats: ['avg', 'med', 'p(90)', 'p(95)', 'max'],
+
     scenarios: {
         estatehub_flow: {
             executor: 'constant-arrival-rate',
@@ -238,10 +240,6 @@ export default function () {
     // ListingService -> Kafka -> SearchService -> Elasticsearch
     sleep(1);
 
-    const uploadData = {
-        file: http.file(photo, '1.jpg', 'image/jpeg'),
-    };
-
     const shouldUploadPhoto = Math.random() < 0.2;
 
     if (shouldUploadPhoto) {
@@ -341,4 +339,54 @@ export default function () {
     }
 
     flowFailed.add(0);
+}
+
+function value(data, metric, stat) {
+    return data.metrics[metric]?.values?.[stat] ?? 0;
+}
+
+function rate(data, metric) {
+    return ((data.metrics[metric]?.values?.rate ?? 0) * 100).toFixed(2);
+}
+
+function ms(data, metric, stat) {
+    return `${value(data, metric, stat).toFixed(2)} ms`;
+}
+
+export function handleSummary(data) {
+    return {
+        stdout: `
+================ ESTATEHUB PERFORMANCE SUMMARY ================
+
+STABILITY
+http_req_failed: ${rate(data, 'http_req_failed')} %
+flow_failed:    ${rate(data, 'flow_failed')} %
+
+HTTP RESPONSE TIMES
+avg: ${ms(data, 'http_req_duration', 'avg')}
+med: ${ms(data, 'http_req_duration', 'med')}
+p90: ${ms(data, 'http_req_duration', 'p(90)')}
+p95: ${ms(data, 'http_req_duration', 'p(95)')}
+max: ${ms(data, 'http_req_duration', 'max')}
+
+TEST SCALE
+iterations: ${value(data, 'iterations', 'count')}
+http_reqs:  ${value(data, 'http_reqs', 'count')}
+vus_max:    ${value(data, 'vus_max', 'max')}
+
+OPERATION RESPONSE TIMES
+01 Register User:      ${ms(data, 'step_01_register_duration', 'avg')}
+02 Activate Account:   ${ms(data, 'step_02_activate_duration', 'avg')}
+03 Login:              ${ms(data, 'step_03_login_duration', 'avg')}
+04 Create Listing:     ${ms(data, 'step_04_create_listing_duration', 'avg')}
+05 Update Listing:     ${ms(data, 'step_05_update_listing_duration', 'avg')}
+06 Publish Listing:    ${ms(data, 'step_06_publish_listing_duration', 'avg')}
+07 Upload Photo:       ${ms(data, 'step_07_upload_photo_duration', 'avg')}
+08 Delete Photo:       ${ms(data, 'step_08_delete_photo_duration', 'avg')}
+09 Search Listings:    ${ms(data, 'step_09_search_duration', 'avg')}
+10 Archive Listing:    ${ms(data, 'step_10_archive_listing_duration', 'avg')}
+
+================================================================
+`,
+    };
 }
